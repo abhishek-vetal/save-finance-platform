@@ -38,6 +38,7 @@ export default function BudgetProgress({ initialBudget, currentExpenses = 0 }) {
     await updateBudgetFn(amount);
   };
 
+  // cannot call the setState directly inside the useEffect
   useEffect(() => {
     // 1. Wait until we actually have a response from the server
     if (updateBudgetData) {
@@ -47,8 +48,10 @@ export default function BudgetProgress({ initialBudget, currentExpenses = 0 }) {
         return;
       }
 
-      setIsEditing(false);
-      setBudget(updateBudgetData.data.amount);
+      setTimeout(() => {
+        setIsEditing(false);
+        setBudget(updateBudgetData.data.amount);
+      }, 0);
       toast.success("Budget updated successfully");
     }
   }, [updateBudgetData]);

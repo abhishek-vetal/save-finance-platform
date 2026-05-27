@@ -8,9 +8,12 @@ export function ThemeToggle() {
   const { resolvedTheme, setTheme } = useTheme();
   const [mounted, setMounted] = React.useState(false);
 
+  // calling setState in useEffect is problem
   // Prevent hydration flicker on initial load
   React.useEffect(() => {
-    setMounted(true);
+    setTimeout(() => {
+      setMounted(true);
+    }, 0);
   }, []);
 
   if (!mounted) {
