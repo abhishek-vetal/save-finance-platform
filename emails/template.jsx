@@ -42,7 +42,7 @@ export default function EmailTemplate({
             {/* Header */}
 
             <Section style={styles.header}>
-              <Text style={styles.logo}>WELTH</Text>
+              <Text style={styles.logo}>Save</Text>
 
               <Text style={styles.subtitle}>Monthly Financial Report</Text>
             </Section>
@@ -127,9 +127,7 @@ export default function EmailTemplate({
 
               {data?.insights?.length > 0 && (
                 <Section style={styles.reportCard}>
-                  <Heading style={styles.sectionHeading}>
-                    Welth Insights
-                  </Heading>
+                  <Heading style={styles.sectionHeading}>Save Insights</Heading>
 
                   {data.insights.map((insight, index) => (
                     <Text key={index} style={styles.insight}>
@@ -147,10 +145,10 @@ export default function EmailTemplate({
             </Section>
 
             <Section style={styles.footer}>
-              <Text style={styles.footerText}>Thank you for using Welth.</Text>
+              <Text style={styles.footerText}>Thank you for using Save.</Text>
 
               <Text style={styles.footerText}>
-                © {new Date().getFullYear()} Welth
+                © {new Date().getFullYear()} Save
               </Text>
             </Section>
           </Container>
@@ -170,7 +168,7 @@ export default function EmailTemplate({
         <Container style={styles.container}>
           {/* Header */}
           <Section style={styles.header}>
-            <Text style={styles.logo}>WELTH</Text>
+            <Text style={styles.logo}>Save</Text>
 
             <Text style={styles.subtitle}>
               Personal Financial Management Platform
@@ -264,7 +262,7 @@ export default function EmailTemplate({
 
           <Section style={styles.footer}>
             <Text style={styles.footerText}>
-              This is an automated account notification from Welth.
+              This is an automated account notification from Save.
             </Text>
 
             <Text style={styles.footerText}>
@@ -274,7 +272,7 @@ export default function EmailTemplate({
             <Hr style={styles.footerHr} />
 
             <Text style={styles.footerText}>
-              © {new Date().getFullYear()} Welth. All rights reserved.
+              © {new Date().getFullYear()} Save. All rights reserved.
             </Text>
           </Section>
         </Container>

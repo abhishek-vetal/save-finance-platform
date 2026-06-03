@@ -1,6 +1,8 @@
 "use client";
 
 import { UpdateDefault } from "@/actions/account";
+import { deleteUserAccount } from "@/actions/dashboard";
+import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
@@ -10,7 +12,7 @@ import {
 } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
 import useFetch from "@/hooks/use-fetch";
-import { ArrowDownRight, ArrowUpRight } from "lucide-react";
+import { ArrowDownRight, ArrowUpRight, Trash } from "lucide-react";
 import Link from "next/link";
 import { useEffect } from "react";
 import { toast } from "sonner";
@@ -24,6 +26,12 @@ export default function AccountCard({ account }) {
     error,
     fn: updateDefaultFn,
   } = useFetch(UpdateDefault);
+
+  const {
+    data: deleteAccountData,
+    loading: deleteAccountLoading,
+    fn: deleteAccountFn,
+  } = useFetch(deleteUserAccount);
 
   const handleToggle = async (event) => {
     event.preventDefault();
@@ -48,6 +56,24 @@ export default function AccountCard({ account }) {
     }
   }, [error]);
 
+  const deleteAccount = async (event, id) => {
+    event.preventDefault();
+    await deleteAccountFn(id);
+  };
+
+  useEffect(() => {
+    if (deleteAccountData) {
+      if (!deleteAccountData?.success) {
+        toast.error(
+          deleteAccountLoading.message || "Failed to delete user account",
+        );
+        return;
+      }
+
+      toast.success("Account deleted successfully");
+    }
+  }, [deleteAccountData, deleteAccountLoading]);
+
   return (
     <Link href={`/account/${id}`}>
       <Card className="group cursor-pointer rounded-3xl bg-card shadow-sm transition-all duration-300 hover:-translate-y-2 hover:shadow-xl">
@@ -63,16 +89,28 @@ export default function AccountCard({ account }) {
           </div>
 
           <div
-            className="flex items-center gap-2"
+            className="flex flex-col gap-3 items-end"
             onClick={(e) => e.stopPropagation()}
           >
-            <p className="text-xs text-muted-foreground">Default</p>
+            <div className="flex items-center gap-2">
+              <p className="text-xs text-muted-foreground">Default</p>
 
-            <Switch
-              checked={isDefault}
-              onClick={handleToggle}
-              disabled={updateDefaultLoading}
-            />
+              <Switch
+                checked={isDefault}
+                onClick={handleToggle}
+                disabled={updateDefaultLoading}
+              />
+            </div>
+            <div>
+              <Button
+                variant="destructive"
+                size="sm"
+                onClick={(event) => deleteAccount(event, id)}
+              >
+                <Trash />
+                Delete
+              </Button>
+            </div>
           </div>
         </CardHeader>
 

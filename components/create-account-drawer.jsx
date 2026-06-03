@@ -147,6 +147,7 @@ export default function CreateAccountDrawer({ children }) {
               placeholder="0.00"
               step="0.01"
               autoComplete="off"
+              onWheel={(e) => e.currentTarget.blur()}
               className="h-11 rounded-xl bg-muted/30"
             />
 

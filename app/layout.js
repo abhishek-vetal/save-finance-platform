@@ -7,13 +7,18 @@ import { ThemeProvider } from "@/components/theme-provider";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata = {
-  title: "Welth",
+  title: "Save",
   description: "One Stop Finance",
 };
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="en" suppressHydrationWarning className={inter.className}>
+    <html
+      lang="en"
+      suppressHydrationWarning
+      className={inter.className}
+      data-scroll-behavior="smooth"
+    >
       <ClerkProvider>
         <body className="min-h-screen bg-background text-foreground transition-colors duration-300">
           <ThemeProvider

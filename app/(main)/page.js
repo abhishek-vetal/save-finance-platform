@@ -131,7 +131,7 @@ export default async function Home() {
 
             <p className="mt-4 max-w-2xl text-sm md:text-base text-white/90 leading-relaxed">
               Join thousands of users who are already managing their finances
-              smarter with Welth
+              smarter with Save
             </p>
 
             <Link href="/dashboard">

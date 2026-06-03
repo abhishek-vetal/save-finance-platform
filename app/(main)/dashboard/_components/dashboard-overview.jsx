@@ -12,7 +12,7 @@ import {
 } from "@/components/ui/select";
 import { ArrowDownRight, ArrowUpRight } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { format, isSameMonth } from "date-fns";
+import { format, getMonth, isSameMonth } from "date-fns";
 import { PieChart, Pie, ResponsiveContainer, Tooltip } from "recharts";
 
 const COLORS = [
@@ -157,8 +157,9 @@ export default function DashboardOverview({ accounts, transactions }) {
       {/* Expense Breakdown */}
       <Card className="rounded-3xl bg-card shadow-sm transition-all duration-300 hover:shadow-xl">
         <CardHeader className="pb-5">
-          <CardTitle className="text-lg font-bold">
-            Monthly Expense Breakdown
+          <CardTitle className="text-lg font-bold flex items-center justify-between">
+            <p>Monthly Expense Breakdown</p>
+            <p>{format(new Date(), "LLLL")}</p>
           </CardTitle>
         </CardHeader>
 
@@ -188,6 +189,8 @@ export default function DashboardOverview({ accounts, transactions }) {
                       content={<CustomTooltip />}
                       cursor={{ fill: "transparent" }}
                       isAnimationActive={false}
+                      // Locks the tooltip to the top edge, but lets it follow your mouse left/right
+                      position={{ y: 0, x: 0 }}
                     />
                   </PieChart>
                 </ResponsiveContainer>

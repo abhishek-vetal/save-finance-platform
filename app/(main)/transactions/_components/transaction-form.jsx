@@ -192,6 +192,7 @@ export default function AddTransactionsForm({
             {...register("amount")}
             placeholder="0.00"
             step="0.01"
+            onWheel={(e) => e.currentTarget.blur()}
             className="h-11 rounded-xl bg-muted/30"
           />
 

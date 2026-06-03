@@ -18,17 +18,17 @@ export default function Header() {
           >
             <Image
               src="/logo-light.png"
-              alt="Welth Logo"
+              alt="Save Logo"
               width={200}
               height={50}
-              className="block dark:hidden w-34 h-12"
+              className="block dark:hidden w-30 h-11"
             />
             <Image
               src="/logo-dark.png"
-              alt="Welth Logo"
+              alt="Save Logo"
               width={200}
               height={50}
-              className="hidden dark:block w-34 h-12"
+              className="hidden dark:block w-30 h-11"
             />
           </Link>
 

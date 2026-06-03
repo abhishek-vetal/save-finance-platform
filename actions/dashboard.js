@@ -115,3 +115,47 @@ export async function getDashboardData() {
 
   return transactions.map((t) => serializeTransaction(t));
 }
+
+export async function deleteUserAccount(accountId) {
+  try {
+    const { userId } = await auth();
+    if (!userId) throw new Error("Unauthorized");
+
+    const user = await db.user.findUnique({
+      where: {
+        clerkUserId: userId,
+      },
+    });
+    if (!user) throw new Error("User not found");
+
+    // SECURITY CHECK: Verify this account actually belongs to this user
+    const account = await db.account.findUnique({
+      where: { id: accountId },
+    });
+
+    if (!account) throw new Error("Account not found");
+    if (account.userId !== user.id)
+      throw new Error("You do not have permission to delete this account");
+
+    await db.$transaction(async (tx) => {
+      await tx.transaction.deleteMany({
+        where: {
+          accountId,
+        },
+      });
+
+      await tx.account.delete({
+        where: {
+          id: accountId,
+        },
+      });
+    });
+
+    revalidatePath("/dashboard");
+
+    return { success: true };
+  } catch (error) {
+    console.error("Failed to delete account:", error.message);
+    throw new Error(error.message);
+  }
+}

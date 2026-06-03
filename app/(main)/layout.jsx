@@ -10,7 +10,7 @@ export default function MainLayout({ children }) {
 
       <footer>
         <div className="mt-16 bg-muted/40 py-10 text-center text-sm text-muted-foreground backdrop-blur-sm">
-          <p>&copy; {getYear(new Date())} Welth. All Rights Reserved.</p>
+          <p>&copy; {getYear(new Date())} Save. All Rights Reserved.</p>
         </div>
       </footer>
     </div>

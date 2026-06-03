@@ -1,4 +1,4 @@
 // inngest/client.ts
 import { Inngest } from "inngest";
 
-export const inngest = new Inngest({ id: "welth", name: "welth" });
+export const inngest = new Inngest({ id: "save", name: "save" });
