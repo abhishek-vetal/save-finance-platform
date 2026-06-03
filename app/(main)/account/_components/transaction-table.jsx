@@ -102,7 +102,7 @@ export default function TransactionTable({ transactions }) {
   };
 
   useEffect(() => {
-    if (deleteTransactionsData && selectIDs.length > 0) {
+    if (deleteTransactionsData) {
       const count = selectIDs.length;
 
       if (count > 1) {
@@ -111,13 +111,9 @@ export default function TransactionTable({ transactions }) {
         toast.success("Transaction deleted successfully");
       }
 
-      // error: Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended.
-      // This removes the cascading render warning completely!
-      setTimeout(() => {
-        setSelectIDs([]);
-      }, 0);
+      setSelectIDs([]);
     }
-  }, [deleteTransactionsData, selectIDs]);
+  }, [deleteTransactionsData]);
 
   useEffect(() => {
     if (error) {
@@ -230,35 +226,16 @@ export default function TransactionTable({ transactions }) {
     setSortConfig({ key, direction });
   };
 
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm, typeFilter, recurringFilter]);
+
   const totalPages = Math.ceil(sortedTransactions.length / ITEMS_PER_PAGE);
 
   const currentTransactions = sortedTransactions.slice(
     indexOfFirstItem,
     indexOfLastItem,
   );
-
-  // you cannot call the setState inside useEffect directly
-  useEffect(() => {
-    setTimeout(() => {
-      setCurrentPage(1);
-    }, 0);
-  }, [searchTerm, typeFilter, recurringFilter]);
-
-  // you cannot call the setState inside useEffect directly
-  // correct out of bound pagination
-  useEffect(() => {
-    if (totalPages > 0 && currentPage > totalPages) {
-      // If we delete everything on page 2, snap back to page 1
-      setTimeout(() => {
-        setCurrentPage(totalPages);
-      }, 0);
-    } else if (totalPages === 0 && currentPage !== 1) {
-      // If all data across the entire table is wiped out, reset to page 1 safely
-      ssetTimeout(() => {
-        setCurrentPage(1);
-      }, 0);
-    }
-  }, [totalPages, currentPage]);
 
   return (
     <div className="flex flex-col gap-5">
