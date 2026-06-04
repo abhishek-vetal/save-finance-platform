@@ -1,6 +1,7 @@
 // app/api/inngest/route.ts
 import { serve } from "inngest/next";
 import { inngest } from "../../../inngest/client";
+export const dynamic = "force-dynamic";
 import {
   checkBudgetAlerts,
   generateMonthlyReport,
