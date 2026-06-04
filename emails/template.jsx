@@ -304,7 +304,7 @@ const styles = {
   },
 
   logo: {
-    fontSize: "20px",
+    fontSize: "32px",
     fontWeight: "700",
     color: "#0f172a",
     margin: "0",
