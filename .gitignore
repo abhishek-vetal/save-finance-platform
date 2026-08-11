@@ -34,7 +34,7 @@ yarn-error.log*
 .env*
 
 #seed files
-/actions/seed.js
+actions/seed.js
 
 # vercel
 .vercel
