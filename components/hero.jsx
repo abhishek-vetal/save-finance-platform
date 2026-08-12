@@ -54,7 +54,7 @@ export default function Hero() {
         className="hero-image-div mt-20 mx-4 overflow-hidden rounded-3xl shadow-2xl will-change-transform"
       >
         <Image
-          src="/banner.jpeg"
+          src="/banner.png"
           alt="banner image"
           width={1300}
           height={500}

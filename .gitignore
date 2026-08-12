@@ -33,9 +33,6 @@ yarn-error.log*
 # env files (can opt-in for committing if needed)
 .env*
 
-#seed files
-actions/seed.js
-
 # vercel
 .vercel
 
@@ -50,3 +47,4 @@ next-env.d.ts
 /app/generated/prisma
 
 /lib/generated/prisma
+actions/seed.js
