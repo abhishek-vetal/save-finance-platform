@@ -7,7 +7,7 @@ datasource db {
   provider = "postgresql"
 }
 
-model User {
+model User { // model name
   id           String        @id @default(uuid())
   clerkUserId  String        @unique
   name         String?
@@ -15,11 +15,12 @@ model User {
   imageUrl     String?
   createdAt    DateTime      @default(now())
   updatedAt    DateTime      @updatedAt
-  account     Account[]
-  budget       Budget[]
-  transactions Transaction[]
 
-  @@map("users")
+  accounts     Account[] // represent relationship with other tables like User 1: M Account
+  transactions Transaction[]
+  budget       Budget? // 1 to 1 (Optional)
+ 
+  @@map("users") // map the primsa User model to the users table in the database.
 }
 
 model Account {
@@ -31,6 +32,9 @@ model Account {
   isDefault    Boolean       @default(false)
   createdAt    DateTime      @default(now())
   updatedAt    DateTime      @updatedAt
+  
+  // user is Prisma's relation field. fields specifies the foreign-key field in the current model, 
+  // while references specifies the field in the related model that it references.
   user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
   transactions Transaction[]
 
@@ -47,12 +51,10 @@ model Transaction {
   accountId         String
   date              DateTime              @default(now())
   category          String
-  receiptUrl        String?
   isRecurring       Boolean               @default(false)
   recurringInterval RecurringIntervalType?
   nextRecurringDate DateTime?
   lastProcessed     DateTime?
-  status            StatusType            @default(COMPLETED)
   createdAt         DateTime              @default(now())
   updatedAt         DateTime              @updatedAt
   account           Account               @relation(fields: [accountId], references: [id], onDelete: Cascade)
@@ -65,7 +67,7 @@ model Transaction {
 model Budget {
   id            String    @id @default(uuid())
   userId        String    @unique
-  amount        Decimal
+  amount        Decimal   @default(0)
   lastAlertSent DateTime?
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
@@ -90,10 +92,4 @@ enum RecurringIntervalType {
   WEEKLY
   MONTHLY
   YEARLY
-}
-
-enum StatusType {
-  PENDING
-  COMPLETED
-  FAILED
 }

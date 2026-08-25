@@ -65,9 +65,9 @@
 }
 
 /* LIGHT THEME */
-
 :root {
-  --background: oklch(1 0 0);
+  /* Added a microscopic cool tint to the light mode for a softer feel */
+  --background: oklch(0.99 0.005 275);
   --foreground: oklch(0.145 0 0);
 
   --card: oklch(1 0 0);
@@ -94,72 +94,77 @@
   --input: oklch(0.922 0 0);
   --ring: oklch(0.708 0 0);
 
-  --radius: 0.625rem;
+  --radius: 0.75rem; /* Slightly rounder default corners */
 }
 
 /* DARK THEME */
-
 .dark {
-  --background: oklch(0.145 0 0);
+  /* Deep midnight violet instead of flat black */
+  --background: oklch(0.14 0.02 275); 
   --foreground: oklch(0.985 0 0);
 
-  --card: oklch(0.205 0 0);
+  /* Elevated slate-violet for cards */
+  --card: oklch(0.18 0.02 275); 
   --card-foreground: oklch(0.985 0 0);
 
-  --popover: oklch(0.205 0 0);
+  --popover: oklch(0.18 0.02 275);
   --popover-foreground: oklch(0.985 0 0);
 
   --primary: oklch(0.922 0 0);
   --primary-foreground: oklch(0.205 0 0);
 
-  --secondary: oklch(0.269 0 0);
+  --secondary: oklch(0.269 0.01 275);
   --secondary-foreground: oklch(0.985 0 0);
 
-  --muted: oklch(0.269 0 0);
+  --muted: oklch(0.23 0.02 275);
   --muted-foreground: oklch(0.708 0 0);
 
-  --accent: oklch(0.269 0 0);
+  --accent: oklch(0.269 0.01 275);
   --accent-foreground: oklch(0.985 0 0);
 
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.556 0 0);
+  /* Softer, more elegant borders */
+  --border: oklch(1 0 0 / 8%);
+  --input: oklch(1 0 0 / 12%);
+  --ring: oklch(0.6 0.05 275);
 }
 
 @layer base {
   * {
-    /* applies consistent borders and focus rings */
     @apply border-border outline-ring/50;
   }
 
   html {
     @apply font-sans scroll-smooth;
-    /* smooth scrolling */
   }
 
   body {
     @apply bg-background text-foreground antialiased;
-    /* bg/text auto-switch in dark mode */
-    /* antialiased improves text rendering */
   }
 }
 
 @layer utilities {
   .gradient {
-    @apply bg-linear-to-r
-        from-violet-500
-        via-blue-500
-        to-cyan-400
-        bg-clip-text
-        text-transparent
-        w-fit;
-
-    /* cleaner professional gradient */
+    @apply bg-linear-to-r 
+      from-neutral-950 
+      via-neutral-700 
+      to-neutral-950 
+      dark:from-amber-200 
+      dark:via-yellow-100 
+      dark:to-amber-300 
+      bg-clip-text 
+      text-transparent 
+      w-fit;
   }
 }
 
-/* Hero animation */
+/* Hero animation with premium float and glow effects */
 .hero-image-div {
-  transition: transform 0.5s ease;
-  transform: perspective(1000px) rotateX(15deg);
+  transition: transform 0.8s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.8s ease;
+  transform: perspective(1000px) rotateX(15deg) translateY(0);
+  box-shadow: 0 25px 50px -12px rgba(139, 92, 246, 0.15); /* Faint purple glow */
+}
+
+.hero-image-div:hover {
+  transform: perspective(1000px) rotateX(5deg) translateY(-10px);
+  box-shadow: 0 35px 60px -15px rgba(139, 92, 246, 0.3); /* Stronger glow on hover */
 }

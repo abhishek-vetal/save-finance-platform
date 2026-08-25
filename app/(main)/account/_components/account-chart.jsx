@@ -5,7 +5,6 @@ import {
   CardAction,
   CardContent,
   CardDescription,
-  CardFooter,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
@@ -17,10 +16,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { endOfDay, format, setDate, startOfDay, subDays } from "date-fns";
+import { endOfDay, format, startOfDay, subDays } from "date-fns";
 import { ArrowDownRight, ArrowUpRight } from "lucide-react";
 import { useMemo, useState } from "react";
-// 1. Added ResponsiveContainer to the imports
 import {
   Bar,
   BarChart,
@@ -40,21 +38,57 @@ const DATE_RANGES = {
   ALL: { label: "All Time", days: null },
 };
 
+// Custom Tooltip 
+const CustomTooltip = ({ active, payload, label }) => {
+  if (active && payload) {
+    return (
+      <div className="rounded-xl border bg-background p-4 shadow-xl">
+        <p className="mb-2 text-sm font-bold">{label}</p>
+        <div className="flex flex-col gap-1">
+          {payload.map((entry, index) => (
+            <div key={index} className="flex items-center justify-between gap-4">
+              <div className="flex items-center gap-2">
+                <div
+                  className="h-2 w-2 rounded-full"
+                  style={{ backgroundColor: entry.color }}
+                />
+                <span className="text-sm text-muted-foreground capitalize">
+                  {entry.name}
+                </span>
+              </div>    
+              <span className="text-sm font-bold tabular-nums">
+                ₹{Number(entry.value).toLocaleString("en-IN", {
+                  minimumFractionDigits: 2,
+                  maximumFractionDigits: 2,
+                })}
+              </span>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
+  return null;
+};
+
 export default function AccountChart({ transactions }) {
   const [dateRange, setDateRange] = useState("1M");
 
   const filteredData = useMemo(() => {
     const range = DATE_RANGES[dateRange];
     const now = new Date();
+    
+    // subtract (days - 1) to get the exact range
     const startDate = range.days
-      ? startOfDay(subDays(now, range.days))
+      ? startOfDay(subDays(now, range.days - 1))
       : startOfDay(new Date(0));
 
-    const filtered = transactions.filter((t) => {
+    const filteredTransactions = transactions.filter((t) => {
+      // used endOfDay so that will consider the transaction till last millisecond of today
       return new Date(t.date) >= startDate && new Date(t.date) <= endOfDay(now);
     });
 
-    const grouped = filtered.reduce((acc, transaction) => {
+    const groupedTransactionIncomeAndExpense = filteredTransactions.reduce((acc, transaction) => {
       const date = format(new Date(transaction.date), "MMM dd");
 
       if (!acc[date]) {
@@ -67,22 +101,23 @@ export default function AccountChart({ transactions }) {
 
       return acc;
     }, {});
+    
+    // since transactions are in descending order I just reverse the result 
+    // I can also sort from based on the date in desc order
+    // return Object.values(groupedTransactionIncomeAndExpense).reverse();
 
-    return Object.values(grouped).sort(
+    return Object.values(groupedTransactionIncomeAndExpense).sort(
       (a, b) => new Date(a.date) - new Date(b.date),
     );
   }, [transactions, dateRange]);
 
   const totals = useMemo(() => {
-    return filteredData.reduce(
-      (acc, day) => {
+    return filteredData.reduce((acc, day) => {
         acc.Income += day.Income;
         acc.Expense += day.Expense;
 
         return acc;
-      },
-      { Income: 0, Expense: 0 },
-    );
+      },{ Income: 0, Expense: 0 });
   }, [filteredData]);
 
   const netTotal = useMemo(() => {
@@ -134,8 +169,11 @@ export default function AccountChart({ transactions }) {
               <div>
                 <p className="text-sm text-muted-foreground">Total Income</p>
 
-                <p className="mt-2 text-xl font-bold text-green-500">
-                  ₹{totals.Income.toFixed(2)}
+                <p className="mt-2 text-xl font-bold text-green-500 tabular-nums">
+                  ₹{totals.Income.toLocaleString("en-IN", {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2,
+                  })}
                 </p>
               </div>
 
@@ -152,8 +190,11 @@ export default function AccountChart({ transactions }) {
               <div>
                 <p className="text-sm text-muted-foreground">Total Expense</p>
 
-                <p className="mt-2 text-xl font-bold text-red-500">
-                  ₹{totals.Expense.toFixed(2)}
+                <p className="mt-2 text-xl font-bold text-red-500 tabular-nums">
+                  ₹{totals.Expense.toLocaleString("en-IN", {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2,
+                  })}
                 </p>
               </div>
 
@@ -171,11 +212,14 @@ export default function AccountChart({ transactions }) {
                 <p className="text-sm text-muted-foreground">Net Balance</p>
 
                 <p
-                  className={`mt-2 text-xl font-bold ${
+                  className={`mt-2 text-xl font-bold tabular-nums ${
                     netTotal >= 0 ? "text-green-500" : "text-red-500"
                   }`}
                 >
-                  ₹{netTotal.toFixed(2)}
+                  ₹{netTotal.toLocaleString("en-IN", {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2,
+                  })}
                 </p>
               </div>
 
@@ -187,8 +231,8 @@ export default function AccountChart({ transactions }) {
         </div>
 
         {/* Chart */}
-        <div className="h-80 w-full">
-          <ResponsiveContainer width="100%" height={300}>
+        <div className="h-80 w-full min-h-75">
+          <ResponsiveContainer width="100%" height={310}>
             <BarChart
               data={filteredData}
               margin={{
@@ -215,16 +259,17 @@ export default function AccountChart({ transactions }) {
                 fontSize={12}
                 tickLine={false}
                 axisLine={false}
-                tickFormatter={(value) => `₹${value}`}
+                tickFormatter={(value) =>
+                  `₹${value.toLocaleString("en-IN")}`
+                }
                 width={80}
               />
 
+              {/* CustomTooltip */}
               <Tooltip
+                content={<CustomTooltip />}
                 cursor={{
                   fill: "rgba(255,255,255,0.03)",
-                }}
-                formatter={(value, name) => {
-                  return [`₹${Number(value).toFixed(2)}`, name];
                 }}
               />
 

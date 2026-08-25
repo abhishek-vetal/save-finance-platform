@@ -12,18 +12,20 @@ import {
 } from "@/components/ui/select";
 import { ArrowDownRight, ArrowUpRight } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { format, getMonth, isSameMonth } from "date-fns";
+import { format, isSameMonth } from "date-fns";
 import { PieChart, Pie, ResponsiveContainer, Tooltip } from "recharts";
 
 const COLORS = [
-  "#3B82F6",
-  "#8B5CF6",
-  "#10B981",
-  "#F59E0B",
-  "#EF4444",
-  "#EC4899",
-  "#14B8A6",
-  "#6366F1",
+  "#38BDF8", // Sky Blue
+  "#34D399", // Emerald Green
+  "#FBBF24", // Amber Yellow
+  "#F87171", // Coral Red
+  "#C084FC", // Purple
+  "#2DD4BF", // Teal
+  "#F472B6", // Pink
+  "#FB923C", // Orange
+  "#A3E635", // Lime
+  "#818CF8", // Indigo
 ];
 
 // when I hover my mouse on piechart then it will give me these props.
@@ -33,7 +35,7 @@ const CustomTooltip = ({ active, payload }) => {
   const { name, value } = payload[0];
 
   return (
-    <div className="bg-background border rounded-lg px-4 py-3 shadow-md pointer-events-none">
+    <div className="bg-background border rounded-lg mt-5 px-4 py-3 shadow-md pointer-events-none">
       <p className="font-medium text-sm">
         {name}:{" "}
         <span className="font-bold">₹{Number(value).toLocaleString()}</span>
@@ -55,6 +57,7 @@ export default function DashboardOverview({ accounts, transactions }) {
     .sort((a, b) => new Date(b.date) - new Date(a.date))
     .slice(0, 7);
 
+  // from here we are working on monthly expense breakdown part
   const now = new Date();
 
   const currentMonthExpenses = accountTransactions.filter((t) => {
@@ -62,11 +65,11 @@ export default function DashboardOverview({ accounts, transactions }) {
   });
 
   const expenseByCategory = currentMonthExpenses.reduce((acc, t) => {
-    acc[t.category] = (acc[t.category] || 0) + Number(t.amount);
+    acc[t.category] = (acc[t.category] || 0) + t.amount;
     return acc;
   }, {});
 
-  // 4. Inject the 'fill' color directly into the data!
+  // Inject the 'fill' color directly into the data!
   const piechartData = Object.entries(expenseByCategory).map(
     ([category, amount], index) => ({
       name: category,
@@ -81,14 +84,14 @@ export default function DashboardOverview({ accounts, transactions }) {
     <div className="grid gap-6 md:grid-cols-2">
       {/* Recent Transactions */}
       <Card className="rounded-3xl bg-card shadow-sm transition-all duration-300 hover:shadow-xl">
-        <CardHeader className="flex flex-row items-center justify-between pb-5">
+        <CardHeader className="flex items-center justify-between pb-5">
           <CardTitle className="text-lg font-bold">
             Recent Transactions
           </CardTitle>
 
           <Select
             value={selectedAccountId || ""}
-            onValueChange={setSelectedAccountId}
+            onValueChange={(value) => setSelectedAccountId(value)}
           >
             <SelectTrigger className="h-10 w-40 rounded-xl">
               <SelectValue placeholder="Select account" />
@@ -107,7 +110,7 @@ export default function DashboardOverview({ accounts, transactions }) {
         </CardHeader>
 
         <CardContent>
-          <div className="space-y-2">
+          <div className="space-y-3">
             {recentTransactions.length === 0 ? (
               <p className="py-12 text-center text-sm text-muted-foreground">
                 No recent transactions
@@ -130,10 +133,10 @@ export default function DashboardOverview({ accounts, transactions }) {
 
                   <div
                     className={cn(
-                      "flex items-center text-sm font-bold",
+                      "flex items-center text-sm font-bold tabular-nums",
                       transaction.type === "EXPENSE"
                         ? "text-red-500"
-                        : "text-green-500",
+                        : "text-green-500"
                     )}
                   >
                     {transaction.type === "EXPENSE" ? (
@@ -141,11 +144,7 @@ export default function DashboardOverview({ accounts, transactions }) {
                     ) : (
                       <ArrowUpRight className="mr-1 h-4 w-4" />
                     )}
-                    ₹
-                    {Number(transaction.amount).toLocaleString(undefined, {
-                      minimumFractionDigits: 2,
-                      maximumFractionDigits: 2,
-                    })}
+                    {`₹${transaction.amount.toFixed(2)}`}
                   </div>
                 </div>
               ))
@@ -188,7 +187,7 @@ export default function DashboardOverview({ accounts, transactions }) {
                     <Tooltip
                       content={<CustomTooltip />}
                       cursor={{ fill: "transparent" }}
-                      isAnimationActive={false}
+                      isAnimationActive={true}
                       // Locks the tooltip to the top edge, but lets it follow your mouse left/right
                       position={{ y: 0, x: 0 }}
                     />
@@ -198,8 +197,11 @@ export default function DashboardOverview({ accounts, transactions }) {
                 <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center">
                   <span className="text-sm text-muted-foreground">Total</span>
 
-                  <span className="text-2xl font-bold">
-                    ₹{totalExpense.toLocaleString()}
+                  <span className="text-2xl font-bold tabular-nums">
+                    ₹{totalExpense.toLocaleString("en-IN", {
+                      minimumFractionDigits: 2,
+                      maximumFractionDigits: 2
+                    })}
                   </span>
                 </div>
               </div>
@@ -216,20 +218,28 @@ export default function DashboardOverview({ accounts, transactions }) {
                       key={item.name}
                       className="flex items-center justify-between rounded-xl bg-muted/40 p-3 transition-all duration-300 hover:bg-muted"
                     >
-                      <div className="flex items-center gap-2 overflow-hidden">
+                      {/* Left Side: Dot and Category Name */}
+                      <div className="flex items-center gap-2 overflow-hidden pr-2">
                         <div
-                          className="h-3 w-3 rounded-full shrink-0"
-                          style={{
-                            backgroundColor: item.fill,
-                          }}
+                          className="h-3 w-3 shrink-0 rounded-full"
+                          style={{ backgroundColor: item.fill }}
                         />
-
-                        <span className="truncate text-sm">{item.name}</span>
+                        <span className="truncate text-sm capitalize">{item.name}</span>
                       </div>
 
-                      <span className="ml-2 text-xs font-bold">
-                        {percentage}%
-                      </span>
+                      {/* Right Side: Tabular Alignment */}
+                      <div className="flex items-center justify-end gap-2 text-right">
+                        <span className="text-sm font-bold tabular-nums">
+                          ₹{item.value.toLocaleString(undefined, {
+                            minimumFractionDigits: 2,
+                            maximumFractionDigits: 2,
+                          })}
+                        </span>
+
+                        <span className="w-14 text-right text-xs text-muted-foreground tabular-nums">
+                          {percentage}%
+                        </span>
+                      </div>
                     </div>
                   );
                 })}

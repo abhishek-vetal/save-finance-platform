@@ -17,14 +17,14 @@ import { Progress } from "@/components/ui/progress";
 import { Spinner } from "@/components/ui/spinner";
 import { toast } from "sonner";
 
-export default function BudgetProgress({ initialBudget, currentExpenses = 0 }) {
+export default function BudgetProgress({ monthlyBudget, currentMonthExpenses = 0 }) {
   const [isEditing, setIsEditing] = useState(false);
-  const [budget, setBudget] = useState(initialBudget?.amount || 0);
-  const [input, setInput] = useState(initialBudget?.amount?.toString() || "");
+  const [budget, setBudget] = useState(monthlyBudget?.amount || 0);
+  const [input, setInput] = useState(monthlyBudget?.amount?.toString() || "");
 
   const {
     data: updateBudgetData,
-    loading: updateBudgetLoading,
+    loading: updateBudgetLoading, 
     fn: updateBudgetFn,
     error,
   } = useFetch(updateBudget);
@@ -39,11 +39,10 @@ export default function BudgetProgress({ initialBudget, currentExpenses = 0 }) {
   };
 
   useEffect(() => {
-    // 1. Wait until we actually have a response from the server
+    // Wait until we actually have a response from the server for the first render value is undefined
     if (updateBudgetData) {
       if (!updateBudgetData.success) {
         toast.error(updateBudgetData.error || "Failed to update budget");
-        console.error("Budget Update Failure:", updateBudgetData.error);
         return;
       }
 
@@ -68,7 +67,8 @@ export default function BudgetProgress({ initialBudget, currentExpenses = 0 }) {
     }
   };
 
-  const percentage = budget ? (currentExpenses / budget) * 100 : 0;
+  // budget will always be 0 or > 0
+  const percentage = budget ? (currentMonthExpenses / budget) * 100 : 0;
 
   return (
     <Card className="w-full rounded-3xl bg-card shadow-sm transition-all duration-300 hover:shadow-xl">
@@ -79,9 +79,8 @@ export default function BudgetProgress({ initialBudget, currentExpenses = 0 }) {
 
             <CardDescription className="text-sm">
               {budget > 0 ? (
-                <span className="text-muted-foreground">
-                  ₹{currentExpenses.toFixed(2)} of ₹{Number(budget).toFixed(2)}{" "}
-                  spent
+                <span className="text-muted-foreground tabular-nums">
+                  {`₹${currentMonthExpenses.toFixed(2)} of ₹${budget.toFixed(2)} spent`}
                 </span>
               ) : (
                 "Set a monthly target to track expenses"
@@ -118,9 +117,9 @@ export default function BudgetProgress({ initialBudget, currentExpenses = 0 }) {
               </div>
             ) : (
               <Button
+                onClick={() => setIsEditing(true)}
                 variant="outline"
                 size="icon"
-                onClick={() => setIsEditing(true)}
                 className="h-9 w-9 rounded-xl text-muted-foreground transition-all hover:scale-105"
               >
                 <Pencil className="h-4 w-4" />
@@ -155,7 +154,7 @@ export default function BudgetProgress({ initialBudget, currentExpenses = 0 }) {
               }`}
             />
 
-            <div className="mt-3 flex justify-between px-1 text-xs font-medium text-muted-foreground">
+            <div className="tabular-nums mt-3 flex justify-between px-1 text-xs font-medium text-muted-foreground">
               <span>
                 {percentage > 100
                   ? "Budget exceeded"
@@ -163,10 +162,10 @@ export default function BudgetProgress({ initialBudget, currentExpenses = 0 }) {
               </span>
 
               {budget > 0 && (
-                <span>
+                <span className="tabular-nums">
                   {percentage > 100
-                    ? `₹${(currentExpenses - budget).toFixed(2)} over limit`
-                    : `₹${(budget - currentExpenses).toFixed(2)} remaining`}
+                    ? `₹${(currentMonthExpenses - budget).toFixed(2)} over limit`
+                    : `₹${(budget - currentMonthExpenses).toFixed(2)} remaining`}
                 </span>
               )}
             </div>

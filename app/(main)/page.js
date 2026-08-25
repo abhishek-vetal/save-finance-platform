@@ -20,11 +20,12 @@ export default async function Home() {
       <Hero />
 
       {/* Stats */}
-      <section className="container mx-auto mt-20 py-20 rounded-4xl bg-muted/40 dark:bg-muted/20">
+      <section className="container mx-auto mt-20 py-20 bg-muted/40 dark:bg-muted/20">
         <div className="grid grid-cols-2 gap-10 px-4 md:grid-cols-4 md:px-6">
           {statsData.map((stat, index) => (
             <div key={index} className="text-center">
-              <h2 className="text-3xl font-bold bg-linear-to-r from-blue-600 via-violet-500 to-cyan-500 dark:from-cyan-400 dark:via-violet-400 dark:to-pink-500 bg-clip-text text-transparent">
+              
+              <h2 className="text-3xl font-bold gradient mx-auto">
                 {stat.value}
               </h2>
 
@@ -123,8 +124,8 @@ export default async function Home() {
       </section>
 
       {/* CTA */}
-      <section className="container mx-auto mt-24 px-4">
-        <div className="rounded-3xl py-14 px-6 md:px-12 md:py-20 bg-linear-to-r from-blue-600 via-violet-600 to-cyan-500 dark:from-cyan-500 dark:via-violet-500 dark:to-pink-500 shadow-xl">
+      <section className="container mx-auto mt-24">
+        <div className="py-14 px-6 md:px-12 md:py-20 bg-linear-to-r from-neutral-900 via-neutral-700 to-neutral-900 dark:from-neutral-950 dark:via-neutral-800 dark:to-neutral-950 shadow-xl shadow-neutral-500/10 dark:shadow-none">
           <div className="flex flex-col items-center text-center text-white">
             <h2 className="text-2xl md:text-4xl font-bold leading-tight">
               Ready To Take Control Of Your Finances?
@@ -136,8 +137,8 @@ export default async function Home() {
             </p>
 
             <Link href="/dashboard">
-              <Button className="mt-7 px-8 py-6 rounded-xl bg-white text-black shadow-md transition-all duration-300 hover:scale-105 hover:shadow-xl dark:bg-black dark:text-white">
-                Start Free Trial
+              <Button className="mt-7 px-8 py-6 rounded-xl shadow-md transition-all duration-300 hover:scale-105 hover:shadow-xl bg-black text-white">
+                Start Your Journey
               </Button>
             </Link>
           </div>

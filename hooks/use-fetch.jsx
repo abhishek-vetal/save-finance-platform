@@ -1,3 +1,5 @@
+// this is the custom hook
+
 import { useState } from "react";
 
 const useFetch = (cb) => {

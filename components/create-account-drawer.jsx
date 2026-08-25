@@ -29,8 +29,10 @@ import { Loader2 } from "lucide-react";
 
 // Step 1 — Define validation rules with Zod
 const accountSchema = z.object({
-  name: z.string().min(1, "Name is required"),
+  name: z.string().min(1, "Name is required and cannot be empty"),
   type: z.enum(["CURRENT", "SAVINGS"], { required_error: "Type is required" }),
+  // z.coerce.number() is useful because form input values generally arrive as strings
+  // "5000" get coerced into 5000 then .min(0) prevents negative balances
   balance: z.coerce.number().min(0, "Balance cannot be negative"),
   isDefault: z.boolean().default(false),
 });
@@ -41,17 +43,18 @@ export default function CreateAccountDrawer({ children }) {
   // Step 2 — Setup React Hook Form with Zod resolver
   const {
     register, // connects inputs to form
-    handleSubmit, // validates then submits
-    formState: { errors }, // errors
-    setValue, // manually set a value (for Select, Switch)
+    handleSubmit, // validates with zod then submits else error
+    formState: { errors }, // provide the errors which we provided in the zod validation schema
     watch, // watch current values
+    setValue, // manually set a value (for Select, Switch) 
     reset, // reset form after submit
   } = useForm({
+    // we are telling react hook form Use this Zod schema when validating the form.
     resolver: zodResolver(accountSchema),
     defaultValues: {
       name: "",
       type: "CURRENT",
-      balance: 0.0,
+      balance: 0,
       isDefault: false,
     },
   });
@@ -70,22 +73,20 @@ export default function CreateAccountDrawer({ children }) {
 
   useEffect(() => {
     if (newAccount) {
+      if(!newAccount.success) {
+        toast.error(error.message || "Failed to create account");
+        return ;
+      }
       toast.success("Account created successfully");
       reset();
       setOpen(false);
     }
   }, [newAccount]);
 
-  useEffect(() => {
-    if (error) {
-      toast.error(error.message || "Failed to create account");
-    }
-  }, [error]);
-
   return (
-    <Drawer open={open} onOpenChange={setOpen}>
+    <Drawer open={open} onOpenChange={(value) => setOpen(value)}>
       <DrawerTrigger asChild>{children}</DrawerTrigger>
-      <DrawerContent className="mx-auto max-w-xl border-none bg-background">
+      <DrawerContent className="max-w-xl mx-auto border-none bg-background">
         <DrawerHeader className="pb-2">
           <DrawerTitle className="text-2xl font-bold tracking-tight">
             Create New Account
@@ -119,15 +120,14 @@ export default function CreateAccountDrawer({ children }) {
           <div className="flex flex-col gap-2">
             <label className="text-sm font-medium">Account Type</label>
             <Select
-              onValueChange={(value) => setValue("type", value)}
               defaultValue="CURRENT"
+              onValueChange={(value) => setValue("type", value)}
             >
               <SelectTrigger className="h-11 w-full rounded-xl bg-muted/30">
                 <SelectValue placeholder="Select type" />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="CURRENT">Current</SelectItem>
-
                 <SelectItem value="SAVINGS">Savings</SelectItem>
               </SelectContent>
             </Select>
@@ -166,8 +166,8 @@ export default function CreateAccountDrawer({ children }) {
               </p>
             </div>
             <Switch
-              onCheckedChange={(checked) => setValue("isDefault", checked)}
               checked={watch("isDefault")}
+              onCheckedChange={(checked) => setValue("isDefault", checked)}
             />
           </div>
 

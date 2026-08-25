@@ -1,6 +1,6 @@
 "use client";
 
-import { UpdateDefault } from "@/actions/account";
+import { UpdateDefaultAccount } from "@/actions/account";
 import { deleteUserAccount } from "@/actions/dashboard";
 import { Button } from "@/components/ui/button";
 import {
@@ -24,8 +24,8 @@ export default function AccountCard({ account }) {
     data: updatedAccount,
     loading: updateDefaultLoading,
     error,
-    fn: updateDefaultFn,
-  } = useFetch(UpdateDefault);
+    fn: updateDefaultAccountFn,
+  } = useFetch(UpdateDefaultAccount);
 
   const {
     data: deleteAccountData,
@@ -34,6 +34,10 @@ export default function AccountCard({ account }) {
   } = useFetch(deleteUserAccount);
 
   const handleToggle = async (event) => {
+    // I use preventDefault() to prevent the Link's default navigation 
+    // when the user interacts with the Switch or Delete button. 
+    // I use stopPropagation() to prevent the click event from bubbling to the parent elements 
+    // and triggering their click behavior.
     event.preventDefault();
 
     if (isDefault) {
@@ -41,20 +45,18 @@ export default function AccountCard({ account }) {
       return;
     }
 
-    await updateDefaultFn(id);
+    await updateDefaultAccountFn(id);
   };
 
   useEffect(() => {
-    if (updatedAccount?.success) {
+    if (updatedAccount) {
+      if (!updatedAccount.success) {
+        toast.error(error.message || "Failed to update default account");
+        return;
+      }
       toast.success("Default account updated successfully");
     }
   }, [updatedAccount]);
-
-  useEffect(() => {
-    if (error) {
-      toast.error(error.message || "Failed to update default account");
-    }
-  }, [error]);
 
   const deleteAccount = async (event, id) => {
     event.preventDefault();
@@ -64,10 +66,8 @@ export default function AccountCard({ account }) {
   useEffect(() => {
     if (deleteAccountData) {
       if (!deleteAccountData?.success) {
-        toast.error(
-          deleteAccountLoading.message || "Failed to delete user account",
-        );
-        return;
+        toast.error(deleteAccountLoading.message || "Failed to delete user account");
+        return
       }
 
       toast.success("Account deleted successfully");
@@ -84,7 +84,7 @@ export default function AccountCard({ account }) {
             </CardTitle>
 
             <p className="mt-1 text-xs text-muted-foreground">
-              {`${type.charAt(0).toUpperCase()}${type.slice(1).toLowerCase()} Account`}
+              {`${type} Account`}
             </p>
           </div>
 
@@ -115,8 +115,11 @@ export default function AccountCard({ account }) {
         </CardHeader>
 
         <CardContent>
-          <p className="text-3xl font-bold tracking-tight text-foreground">
-            ₹{balance.toFixed(2)}
+          <p className="text-3xl font-bold tracking-tight text-foreground tabular-nums">
+            ₹{balance.toLocaleString("en-IN", {
+              minimumFractionDigits: 2,
+              maximumFractionDigits: 2,
+            })}
           </p>
         </CardContent>
 

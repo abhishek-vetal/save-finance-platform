@@ -5,7 +5,8 @@ import { auth } from "@clerk/nextjs/server";
 import { endOfMonth, startOfMonth } from "date-fns";
 import { revalidatePath } from "next/cache";
 
-export async function getCurrentBudget() {
+// use to get the users monthly budget and total monthly expense
+export async function getBudgetAndTotalExpense() {
   try {
     const { userId } = await auth();
     if (!userId) throw new Error("Unauthorized");
@@ -19,6 +20,7 @@ export async function getCurrentBudget() {
       where: { userId: user.id },
     });
 
+    // aggregate performs database-level aggregation such as sum, count, average, minimum, or maximum
     const totalExpense = await db.transaction.aggregate({
       where: {
         userId: user.id,
@@ -42,6 +44,7 @@ export async function getCurrentBudget() {
   }
 }
 
+// using this to update the budget and create new budget if not present
 export async function updateBudget(updateAmount) {
   try {
     const { userId } = await auth();
@@ -52,6 +55,12 @@ export async function updateBudget(updateAmount) {
     });
     if (!user) throw new Error("User not found");
 
+    // authenticating the input budget on the server side as well
+    if (typeof updateAmount !== "number" || updateAmount < 0) {
+      throw new Error("Invalid budget amount");
+    }
+
+    // To update a budget if it exists or create it if it does not exist in Prisma, use the upsert method
     const upsertBudget = await db.budget.upsert({
       where: { userId: user.id },
       update: { amount: updateAmount, lastAlertSent: null },

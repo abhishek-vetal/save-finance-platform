@@ -11,7 +11,7 @@ export default function Hero() {
   React.useEffect(() => {
     const handleScroll = () => {
       const scrolled = window.scrollY;
-      const tilt = Math.max(0, 15 - scrolled * 0.05);
+      const tilt = Math.max(0, 5 - scrolled * 0.05);
 
       if (imageRef.current) {
         imageRef.current.style.transform = `perspective(1000px) rotateX(${tilt}deg)`;
@@ -29,7 +29,7 @@ export default function Hero() {
   return (
     <div className="container mx-auto flex flex-col items-center px-4 text-center md:px-6">
       {/* Hero title with different gradients in light/dark */}
-      <h1 className="pb-3 mt-10 text-5xl font-bold tracking-tight md:text-[110px] leading-none bg-linear-to-r from-slate-800 via-violet-600 to-blue-500 dark:from-cyan-400 dark:via-violet-400 dark:to-pink-500 bg-clip-text text-transparent">
+      <h1 className="pb-3 mt-10 text-5xl font-bold tracking-tight md:text-[110px] leading-none gradient">
         Manage Your Finances <br />
         With Intelligence
       </h1>
@@ -58,7 +58,6 @@ export default function Hero() {
           alt="banner image"
           width={1300}
           height={500}
-          className="transition-transform duration-700 hover:scale-[1.02]"
         />
       </div>
     </div>

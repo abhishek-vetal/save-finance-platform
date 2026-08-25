@@ -1,4 +1,3 @@
-// inngest/functions.ts
 import db from "@/lib/prisma";
 import { inngest } from "./client";
 import {
@@ -12,8 +11,11 @@ import { Resend } from "resend";
 import EmailTemplate from "@/emails/template";
 import { GoogleGenAI } from "@google/genai";
 
+// We use step in Inngest to break background jobs into smaller, checkpointed units of work so that 
+// previously completed actions are not re-run when failures happen
+
 // Recurring transactions automation.
-// 2. Process recurring transaction
+// this will happen second --> Process recurring transaction
 export const processRecurringTransactions = inngest.createFunction(
   {
     id: "process-recurring-transaction",
@@ -38,16 +40,20 @@ export const processRecurringTransactions = inngest.createFunction(
           id: event.data.id, // Fixed: matching the payload key
           userId: event.data.userId,
         },
-        include: {
-          account: true,
-        },
+        include: { account: true },
       });
     });
 
-    if (!transaction || !isTransactionDue(transaction))
-      return { message: "Not due" };
+    // 3. Early validation checks with distinct status messages
+    if (!transaction) {
+      return { message: "Transaction not found" };
+    }
 
-    // 3. Database updates MUST be inside a step.run() in Inngest!
+    if (!isTransactionDue(transaction)) {
+      return { message: "Transaction is not due yet" };
+    }
+
+    // 4. Database updates MUST be inside a step.run() in Inngest!
     await step.run("process-database-updates", async () => {
       await db.$transaction(async (tx) => {
         // A. Create new transaction
@@ -60,7 +66,6 @@ export const processRecurringTransactions = inngest.createFunction(
             category: transaction.category,
             userId: transaction.userId,
             accountId: transaction.accountId,
-            status: "COMPLETED",
             isRecurring: false,
           },
         });
@@ -94,21 +99,22 @@ export const processRecurringTransactions = inngest.createFunction(
   },
 );
 
-// Triggerring recurring transaction with events.
+// this will happen first --> Triggerring recurring transaction with events.
 export const triggerRecurringTransaction = inngest.createFunction(
   {
     id: "trigger-recurring-transaction",
+    // timezone Asia/Kolkata runs every day at exactly 12:00 AM (midnight) Indian Standard Time
     triggers: { cron: "TZ=Asia/Kolkata 0 0 * * *" },
   },
   async ({ step }) => {
+
     const recurringTransactions = await step.run(
       "fetch-recurring-transactions",
       async () => {
         return await db.transaction.findMany({
           where: {
             isRecurring: true,
-            nextRecurringDate: { lte: new Date() },
-            status: "COMPLETED",
+            nextRecurringDate: { lte: new Date() }
           },
         });
       },
@@ -135,10 +141,9 @@ export const triggerRecurringTransaction = inngest.createFunction(
 
 // checking the budget alert to send the email.
 export const checkBudgetAlerts = inngest.createFunction(
-  // Configuration and trigger
   {
     id: "check-budget-alert",
-    triggers: [{ cron: "TZ=Asia/Kolkata 0 */6 * * *" }],
+    triggers: { cron: "TZ=Asia/Kolkata 0 */6 * * *" },
   },
   async ({ step }) => {
     const now = new Date();
@@ -158,13 +163,12 @@ export const checkBudgetAlerts = inngest.createFunction(
     for (const budget of budgets) {
       // Fetch Aggregated Expenses for this specific user
       const totalExpense = await step.run(
-        `calculate-expenses-${budget.userId}`,
+        `calculate-monthly-total-expense-${budget.userId}`,
         async () => {
           return await db.transaction.aggregate({
             where: {
               userId: budget.userId,
               type: "EXPENSE",
-              status: "COMPLETED",
               date: {
                 gte: monthStart,
                 lte: monthEnd,
@@ -177,11 +181,9 @@ export const checkBudgetAlerts = inngest.createFunction(
         },
       );
 
-      const expenseAmount = totalExpense._sum.amount
-        ? totalExpense._sum.amount.toNumber()
-        : 0;
-
+      const expenseAmount = totalExpense._sum.amount?.toNumber() || 0;
       const budgetAmount = budget.amount.toNumber();
+
       const percentageUsed = (expenseAmount / budgetAmount) * 100;
       const lastAlertSent = budget.lastAlertSent;
 
@@ -234,19 +236,17 @@ export const checkBudgetAlerts = inngest.createFunction(
 export const generateMonthlyReport = inngest.createFunction(
   {
     id: "generate-monthly-report",
-    triggers: { cron: "TZ=Asia/Kolkata 0 0 1 * *" }, // for every month
+    // runs at 12:00 AM (midnight) on the 1st day of every month
+    triggers: { cron: "TZ=Asia/Kolkata 0 0 1 * *" }
   },
   async ({ step }) => {
+
     const users = await step.run("fetch-all-users", async () => {
-      return await db.user.findMany({
-        include: {
-          account: true,
-        },
-      });
+      return await db.user.findMany(); 
     });
 
     for (const user of users) {
-      await step.run(`generate-report-${user.id}`, async () => {
+      await step.run(`generate-monthly-report-${user.id}`, async () => {
         const now = new Date();
         const lastMonth = subMonths(now, 1);
         const fullMonthName = format(lastMonth, "MMMM");
@@ -302,8 +302,7 @@ const getUsersMonthlyStats = async (userId, month) => {
       const amount = t.amount.toNumber();
       if (t.type === "EXPENSE") {
         stats.totalExpenses += amount;
-        stats.byCategory[t.category] =
-          (stats.byCategory[t.category] || 0) + amount;
+        stats.byCategory[t.category] = (stats.byCategory[t.category] || 0) + amount;
       } else {
         stats.totalIncome += amount;
       }
@@ -333,6 +332,7 @@ const generateFinancialInsights = async (stats, month) => {
     - Expense Categories: ${Object.entries(stats.byCategory)
       .map(([category, amount]) => `${category}: ₹${amount}`)
       .join(", ")}
+    - Transactions Count: ${stats.transactionCount}
 
     Format the response ONLY as a raw JSON array of strings.
     Example: ["insight 1", "insight 2", "insight 3"]
@@ -361,6 +361,7 @@ const generateFinancialInsights = async (stats, month) => {
   }
 };
 
+// this checks whether the transaction is due or not 
 function isTransactionDue(transaction) {
   // If no lastProcessed date, transaction is due
   if (!transaction.lastProcessed) return true;
@@ -382,10 +383,10 @@ function calculateNextRecurringDate(date, interval) {
       next.setDate(next.getDate() + 7);
       break;
     case "MONTHLY":
-      next.setMonth(next.getMonth() + 1);
+      next.setDate(next.getDate() + 30);
       break;
     case "YEARLY":
-      next.setFullYear(next.getFullYear() + 1);
+      next.setDate(next.getDate() + 365);
       break;
   }
   return next;

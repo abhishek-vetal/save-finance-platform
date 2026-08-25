@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Spinner } from "@/components/ui/spinner";
 import useFetch from "@/hooks/use-fetch";
+import imageCompression from "browser-image-compression";
 import { Camera, Receipt } from "lucide-react";
 import { useEffect, useRef } from "react";
 import { toast } from "sonner";
@@ -20,19 +21,36 @@ export default function ReceiptScanner({ onScanComplete }) {
     const file = event.target.files?.[0];
     if (!file) return;
 
-    // Make sure they actually uploaded an image with file size > 5MB
-    if (!file.type.includes("image")) {
+    // Make sure they actually uploaded an image
+    if (!file.type.startsWith("image/")) {
       toast.error("Please upload an image file.");
-      return;
-    } else if (file.size > 5 * 1024 * 1024) {
-      toast.error("Please enter file of size less than 5MB");
+      event.target.value = "";
       return;
     }
 
-    const formData = new FormData();
-    formData.append("receipt", file);
+    try {
+      // Options to compress image below 1.5MB and max dimension 1920px
+      // Serverless payload limits --> maximum sizes allowed for data sent to or returned by serverless function
+      const options = {
+        maxSizeMB: 1.5,
+        maxWidthOrHeight: 1920,
+        useWebWorker: true,
+      };
 
-    await scanReceiptFn(formData);
+      const compressedFile = await imageCompression(file, options);
+
+      // FormData API used to package a binary file so it can be sent over the network
+      // to your server or Server Action
+      const formData = new FormData();
+
+      // Adds the compressed file to this container under the key name "receipt".
+      formData.append("receipt", compressedFile);
+
+      await scanReceiptFn(formData);
+    } catch (error) {
+      console.error("Compression error:", error);
+      toast.error("Failed to process image compression");
+    }
   };
 
   useEffect(() => {
@@ -74,6 +92,10 @@ export default function ReceiptScanner({ onScanComplete }) {
 
               <span className="rounded-full bg-muted px-2 py-0.5 text-[10px] text-muted-foreground">
                 Fast
+              </span>
+
+              <span className="rounded-full bg-muted px-2 py-0.5 text-[10px] text-muted-foreground">
+                Expense Only
               </span>
 
               <span className="rounded-full bg-muted px-2 py-0.5 text-[10px] text-muted-foreground">

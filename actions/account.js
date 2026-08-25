@@ -6,16 +6,21 @@ import { revalidatePath } from "next/cache";
 
 const serializeTransaction = (obj) => {
   const serialized = { ...obj };
-  if (obj.balance) {
+  
+  if (obj.balance !== undefined && obj.balance !== null) {
     serialized.balance = obj.balance.toNumber();
   }
-  if (obj.amount) {
+  
+  if (obj.amount !== undefined && obj.amount !== null) {
     serialized.amount = obj.amount.toNumber();
   }
+  
   return serialized;
 };
 
-export async function UpdateDefault(accountId) {
+// update the default user account first make the default account as false 
+// then make the provided account as default
+export async function UpdateDefaultAccount(accountId) {
   try {
     const { userId } = await auth();
     if (!userId) throw new Error("Unauthorized");
@@ -26,6 +31,9 @@ export async function UpdateDefault(accountId) {
     if (!user) throw new Error("User not found");
 
     // First, unset any existing default account
+    // here we cannot use update since it requires searching based on the @unique field
+    // as well as if only one account is present then update fails 
+    // since update strictly need to find the isDefault: true, therefore we use updateMany
     await db.account.updateMany({
       where: {
         userId: user.id,
@@ -37,8 +45,8 @@ export async function UpdateDefault(accountId) {
     // Then set the new default account
     const account = await db.account.update({
       where: {
-        id: accountId,
         userId: user.id,
+        id: accountId,
       },
       data: { isDefault: true },
     });
@@ -50,6 +58,7 @@ export async function UpdateDefault(accountId) {
   }
 }
 
+// use to get the account information along with transactions and their count
 export async function getAccountWithTransactions(accountId) {
   try {
     const { userId } = await auth();
@@ -63,18 +72,16 @@ export async function getAccountWithTransactions(accountId) {
     const account = await db.account.findUnique({
       where: {
         id: accountId,
-        userId: user.id,
+        userId: user.id
       },
       include: {
         transactions: {
-          orderBy: { date: "desc" },
+          orderBy: { date: "desc" }
         },
         _count: {
-          select: {
-            transactions: true,
-          },
-        },
-      },
+          select: { transactions: true }
+        }
+      }
     });
 
     if (!account) return null;
@@ -102,13 +109,12 @@ export async function deleteBulkTransactions(transactionIds) {
 
     const transactions = await db.transaction.findMany({
       where: {
-        id: {
-          in: transactionIds,
-        },
         userId: user.id,
-      },
+        id: { in: transactionIds }
+      }
     });
 
+    // before deleting the transactions update the account balances
     const accountBalanceChanges = transactions.reduce((acc, transaction) => {
       const change = Number(
         transaction.type === "INCOME"
@@ -123,9 +129,9 @@ export async function deleteBulkTransactions(transactionIds) {
       //Delete transactions
       await tx.transaction.deleteMany({
         where: {
-          id: { in: transactionIds },
           userId: user.id,
-        },
+          id: { in: transactionIds }
+        }
       });
 
       //Update balance

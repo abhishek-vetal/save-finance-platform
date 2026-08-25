@@ -21,76 +21,82 @@ import {
 } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
 import { format } from "date-fns";
-import { CalendarIcon } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { CalendarIcon, Plus } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import useFetch from "@/hooks/use-fetch";
 import { createTransactions, updateTransaction } from "@/actions/transactions";
 import { useRouter } from "next/navigation";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { Spinner } from "@/components/ui/spinner";
 import ReceiptScanner from "./receipt-scanner";
 
 export const transactionSchema = z
   .object({
-    type: z.enum(["INCOME", "EXPENSE"]),
-    amount: z.string().min(1, "Amount is required"),
-    description: z.string().optional(),
-    date: z.date({ required_error: "Date is required" }),
+    type: z.enum(["INCOME", "EXPENSE"], { required_error: "Type is required" }),
+    amount: z.coerce.number().min(0.01, "Amount is required"),
     accountId: z.string().min(1, "Account is required"),
     category: z.string().min(1, "Category is required"),
+    date: z.coerce.date({ required_error: "Date is required" }),
+    description: z.string().optional(),
     isRecurring: z.boolean().default(false),
     recurringInterval: z
       .enum(["DAILY", "WEEKLY", "MONTHLY", "YEARLY"])
       .optional(),
   })
-  .refine((data) => !data.isRecurring || data.recurringInterval, {
+  // use to provide error when A->B = ~A V B fails 
+  .refine((data) => !data.isRecurring || Boolean(data.recurringInterval), {
     message: "Recurring interval is required for recurring transactions",
     path: ["recurringInterval"],
   });
 
 export default function AddTransactionsForm({
-  accounts,
-  categories,
+  accounts = [],
+  categories = [],
   editMode = false,
   initialData = null,
 }) {
   const router = useRouter();
+  const [calendarOpen, setCalendarOpen] = useState(false);
+
+  const defaultAccountId =
+    accounts.find((ac) => ac.isDefault)?.id || accounts[0]?.id || "";
 
   const {
-    register, // Connects your HTML inputs to the form so it can track their values
-    handleSubmit, // Wraps your form's submit event to check for validation errors first
-    formState: {
-      errors, // An object containing all the validation errors (e.g., "Email is required")
-    },
-    watch, // Listens to an input in real-time and updates the UI when it changes
-    setValue, // Programmatically changes an input's value behind the scenes
-    reset, // Clears the form back to empty or back to its default values
+    register,
+    handleSubmit,
+    formState: { errors },
+    watch,
+    setValue,
+    reset,
   } = useForm({
     resolver: zodResolver(transactionSchema),
+    // prevents fields with errors from re-validating on every keystroke or change 
+    // after an initial submit attempt 
+    reValidateMode: "onSubmit",
     defaultValues:
       editMode && initialData
         ? {
-            type: initialData.type,
-            amount: initialData.amount.toString(),
-            description: initialData.description,
-            accountId: initialData.accountId,
-            category: initialData.category,
-            date: new Date(initialData.date),
-            isRecurring: initialData.isRecurring,
-            ...(initialData.recurringInterval && {
-              recurringInterval: initialData.recurringInterval,
-            }),
-          }
+          type: initialData.type,
+          amount: initialData.amount,
+          description: initialData.description || "",
+          accountId: initialData.accountId,
+          category: initialData.category,
+          date: new Date(initialData.date),
+          isRecurring: initialData.isRecurring || false,
+          ...(initialData.recurringInterval && {
+            recurringInterval: initialData.recurringInterval,
+          }),
+        }
         : {
-            type: "EXPENSE",
-            amount: "",
-            description: "",
-            accountId: accounts.find((ac) => ac.isDefault)?.id,
-            date: new Date(),
-            isRecurring: false,
-          },
+          type: "EXPENSE",
+          amount: "",
+          description: "",
+          accountId: defaultAccountId,
+          category: "",
+          date: new Date(),
+          isRecurring: false,
+        },
   });
 
   const {
@@ -99,37 +105,6 @@ export default function AddTransactionsForm({
     fn: transactionFn,
   } = useFetch(editMode ? updateTransaction : createTransactions);
 
-  const onSubmit = (data) => {
-    const formData = {
-      ...data,
-      amount: parseFloat(data.amount),
-    };
-
-    editMode
-      ? transactionFn(initialData.id, formData)
-      : transactionFn(formData);
-  };
-
-  useEffect(() => {
-    if (transactionResult && !transactionLoading) {
-      if (!transactionResult.success) {
-        toast.error(
-          transactionResult.error || editMode
-            ? "Failed to update transaction"
-            : "Failed to create transaction",
-        );
-        return;
-      }
-      toast.success(
-        editMode
-          ? "Transaction updated successfully"
-          : "Transaction created successfully",
-      );
-      reset();
-      router.push(`/account/${transactionResult.data.accountId}`);
-    }
-  }, [transactionResult, transactionLoading, router, reset]); // Added dependencies for React safety
-
   const type = watch("type");
   const accountId = watch("accountId");
   const category = watch("category");
@@ -137,65 +112,114 @@ export default function AddTransactionsForm({
   const date = watch("date");
   const recurringInterval = watch("recurringInterval");
 
-  const filteredCategories = categories.filter(
-    (category) => category.type === type,
-  );
+  // filtered categories based on the income or expense
+  const filteredCategoriesForIncomeOrExpense = categories.filter((c) => c.type === type);
+
+  // when type is changed old category will not match with new type so handle that
+  const handleTypeChange = (newType) => {
+    setValue("type", newType);
+    // Reset category if it doesn't belong to the newly selected type
+    const isValidCategory = categories.some(
+      (c) => c.name === category && c.type === newType
+    );
+    if (!isValidCategory) {
+      setValue("category", "");
+    }
+  };
+
+  const onSubmit = (formData) => {
+    if (editMode) {
+      transactionFn(initialData.id, formData);
+    } else {
+      transactionFn(formData);
+    }
+  };
+
+  useEffect(() => {
+    if (transactionResult && !transactionLoading) {
+      if (!transactionResult.success) {
+        toast.error(
+          transactionResult.error ||
+          (editMode
+            ? "Failed to update transaction"
+            : "Failed to create transaction"),
+        );
+        return;
+      }
+
+      toast.success(
+        editMode
+          ? "Transaction updated successfully"
+          : "Transaction created successfully",
+      );
+      // I don't want to see the previous transaction data after reset in editMode so I will not reset 
+      // transaction data in editMode
+      if (!editMode) reset();
+      router.push(`/account/${transactionResult.data.accountId}`);
+    }
+  }, [transactionResult, transactionLoading, editMode]);
 
   const handleScanComplete = (scannedData) => {
     if (scannedData?.data) {
-      setValue("amount", scannedData.data.amount.toString());
-      setValue("date", new Date(scannedData.data.date));
-      if (scannedData.data.description)
-        setValue("description", scannedData.data.description);
-      if (scannedData.data.category)
-        setValue("category", scannedData.data.category);
+      if (scannedData.data.amount) {
+        setValue("amount", scannedData.data.amount.toString(), {
+          shouldValidate: true, // Runs schema validation immediately
+        });
+      }
+      if (scannedData.data.date) {
+        setValue("date", new Date(scannedData.data.date), {
+          shouldValidate: true,
+        });
+      }
+      if (scannedData.data.description) {
+        setValue("description", scannedData.data.description, {
+          shouldValidate: true,
+        });
+      }
+      if (scannedData.data.category) {
+        setValue("category", scannedData.data.category, {
+          shouldValidate: true,
+        });
+      }
     }
   };
 
   return (
-    <form
-      onSubmit={handleSubmit(onSubmit)}
-      className="mt-8 flex flex-col gap-6"
-    >
+    <form onSubmit={handleSubmit(onSubmit)} className="mt-8 flex flex-col gap-6">
       {!editMode && <ReceiptScanner onScanComplete={handleScanComplete} />}
 
-      {/* Type */}
+      {/* Transaction Type */}
       <div className="flex flex-col gap-2">
         <label className="text-sm font-medium">Type</label>
-
-        <Select onValueChange={(value) => setValue("type", value)} value={type}>
-          <SelectTrigger className="w-full h-11 rounded-xl bg-muted/30">
+        <Select value={type} onValueChange={(value) => handleTypeChange(value)}>
+          <SelectTrigger className="h-11 w-full rounded-xl bg-muted/30">
             <SelectValue placeholder="Select type" />
           </SelectTrigger>
-
           <SelectContent>
             <SelectGroup>
               <SelectItem value="INCOME">Income</SelectItem>
-
               <SelectItem value="EXPENSE">Expense</SelectItem>
             </SelectGroup>
           </SelectContent>
         </Select>
-
         {errors.type && (
           <p className="text-sm text-red-500">{errors.type.message}</p>
         )}
       </div>
 
-      {/* Amount + Account */}
+      {/* Amount and Account */}
       <div className="grid gap-5 md:grid-cols-2">
         <div className="flex flex-col gap-2">
           <label className="text-sm font-medium">Amount</label>
-
           <Input
             type="number"
             {...register("amount")}
             placeholder="0.00"
             step="0.01"
+            // prevent accidental scrolling values on <input type="number"> fields
             onWheel={(e) => e.currentTarget.blur()}
-            className="h-11 rounded-xl bg-muted/30"
+            className="h-11 rounded-xl bg-muted/30 tabular-nums"
           />
-
           {errors.amount && (
             <p className="text-sm text-red-500">{errors.amount.message}</p>
           )}
@@ -203,32 +227,39 @@ export default function AddTransactionsForm({
 
         <div className="flex flex-col gap-2">
           <label className="text-sm font-medium">Account</label>
-
           <Select
-            onValueChange={(value) => setValue("accountId", value)}
             value={accountId}
+            onValueChange={(value) => setValue("accountId", value, { shouldValidate: true })}
           >
-            <SelectTrigger className="w-full h-11 rounded-xl bg-muted/30">
+            <SelectTrigger className="h-11 w-full rounded-xl bg-muted/30">
               <SelectValue placeholder="Select account" />
             </SelectTrigger>
-
             <SelectContent>
               <SelectGroup>
                 {accounts.map((account) => (
                   <SelectItem key={account.id} value={account.id}>
-                    {account.name} ( ₹{parseFloat(account.balance).toFixed(2)})
+                    {account.name} (₹
+                    {account.balance.toLocaleString("en-IN", {
+                      minimumFractionDigits: 2,
+                      maximumFractionDigits: 2,
+                    })}
+                    )
                   </SelectItem>
                 ))}
-
                 <CreateAccountDrawer>
-                  <Button variant="ghost" className="mt-3 w-full rounded-xl">
+                  <Button
+                    variant="ghost"
+                    className="mt-2 w-full justify-start rounded-xl text-muted-foreground transition-colors hover:text-foreground"
+                  >
+                    <div className="mr-2.5 flex h-6 w-6 items-center justify-center rounded-full bg-muted text-foreground">
+                      <Plus className="h-3.5 w-3.5" />
+                    </div>
                     Create Account
                   </Button>
                 </CreateAccountDrawer>
               </SelectGroup>
             </SelectContent>
           </Select>
-
           {errors.accountId && (
             <p className="text-sm text-red-500">{errors.accountId.message}</p>
           )}
@@ -238,26 +269,23 @@ export default function AddTransactionsForm({
       {/* Category */}
       <div className="flex flex-col gap-2">
         <label className="text-sm font-medium">Category</label>
-
         <Select
-          onValueChange={(value) => setValue("category", value)}
           value={category}
+          onValueChange={(value) => setValue("category", value, { shouldValidate: true })}
         >
-          <SelectTrigger className="w-full h-11 rounded-xl bg-muted/30">
+          <SelectTrigger className="h-11 w-full rounded-xl bg-muted/30">
             <SelectValue placeholder="Select category" />
           </SelectTrigger>
-
           <SelectContent>
             <SelectGroup>
-              {filteredCategories.map((category) => (
-                <SelectItem key={category.id} value={category.id}>
-                  {category.id}
+              {filteredCategoriesForIncomeOrExpense.map((c) => (
+                <SelectItem key={c.id} value={c.id}>
+                  {c.name}
                 </SelectItem>
               ))}
             </SelectGroup>
           </SelectContent>
         </Select>
-
         {errors.category && (
           <p className="text-sm text-red-500">{errors.category.message}</p>
         )}
@@ -266,35 +294,30 @@ export default function AddTransactionsForm({
       {/* Date */}
       <div className="flex flex-col gap-2">
         <label className="text-sm font-medium">Date</label>
-
-        <Popover>
+        <Popover open={calendarOpen} onOpenChange={(value) => setCalendarOpen(value)}>
           <PopoverTrigger asChild>
             <Button
               variant="outline"
-              className={cn(
-                "w-full h-11 rounded-xl bg-muted/30 pl-3 text-left font-normal",
-                !date && "text-muted-foreground",
-              )}
+              className="h-11 w-[50%] rounded-xl bg-muted/30 pl-3 text-left font-normal"
             >
               {date ? format(date, "PPP") : <span>Pick a date</span>}
-
               <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
             </Button>
           </PopoverTrigger>
-
-          <PopoverContent className="w-fit p-0" align="start">
+          <PopoverContent className="w-auto p-0" align="start">
             <Calendar
               mode="single"
-              onSelect={(value) => setValue("date", value)}
               selected={date}
+              onSelect={(val) => {
+                setValue("date", val, { shouldValidate: true });
+                setCalendarOpen(false);
+              }}
               disabled={(calendarDay) =>
                 calendarDay > new Date() || calendarDay < new Date("1900-01-01")
               }
-              initialFocus
             />
           </PopoverContent>
         </Popover>
-
         {errors.date && (
           <p className="text-sm text-red-500">{errors.date.message}</p>
         )}
@@ -303,33 +326,32 @@ export default function AddTransactionsForm({
       {/* Description */}
       <div className="flex flex-col gap-2">
         <label className="text-sm font-medium">Description</label>
-
         <Input
-          placeholder="Enter description"
+          placeholder="Enter description (optional)"
           {...register("description")}
           className="h-11 rounded-xl bg-muted/30"
         />
-
         {errors.description && (
           <p className="text-sm text-red-500">{errors.description.message}</p>
         )}
       </div>
 
-      {/* Recurring */}
+      {/* Recurring Switch */}
       <div className="flex items-center justify-between rounded-2xl bg-muted/40 p-5">
         <div className="flex flex-col gap-1">
-          <label className="text-base font-semibold">
-            Recurring Transaction
-          </label>
-
+          <label className="text-base font-semibold">Recurring Transaction</label>
           <p className="text-sm text-muted-foreground">
-            Set up a recurring schedule
+            Set up a repeating automated transaction
           </p>
         </div>
-
         <Switch
-          onCheckedChange={(checked) => setValue("isRecurring", checked)}
           checked={isRecurring}
+          onCheckedChange={(checked) => {
+            setValue("isRecurring", checked, { shouldValidate: true });
+            if (!checked) {
+              setValue("recurringInterval", undefined, { shouldValidate: true });
+            }
+          }}
         />
       </div>
 
@@ -337,26 +359,22 @@ export default function AddTransactionsForm({
       {isRecurring && (
         <div className="flex flex-col gap-2">
           <label className="text-sm font-medium">Recurring Interval</label>
-
           <Select
-            onValueChange={(value) => setValue("recurringInterval", value)}
-            defaultValue={recurringInterval}
+            value={recurringInterval}
+            onValueChange={(value) =>
+              setValue("recurringInterval", value, { shouldValidate: true })
+            }
           >
-            <SelectTrigger className="w-full h-11 rounded-xl bg-muted/30">
+            <SelectTrigger className="h-11 w-full rounded-xl bg-muted/30">
               <SelectValue placeholder="Select interval" />
             </SelectTrigger>
-
             <SelectContent>
               <SelectItem value="DAILY">Daily</SelectItem>
-
               <SelectItem value="WEEKLY">Weekly</SelectItem>
-
               <SelectItem value="MONTHLY">Monthly</SelectItem>
-
               <SelectItem value="YEARLY">Yearly</SelectItem>
             </SelectContent>
           </Select>
-
           {errors.recurringInterval && (
             <p className="text-sm text-red-500">
               {errors.recurringInterval.message}
@@ -382,12 +400,12 @@ export default function AddTransactionsForm({
           className="h-11 rounded-xl shadow-sm transition-all duration-300 hover:shadow-lg"
         >
           {transactionLoading ? (
-            <>
-              <Spinner data-icon="inline-start" />
-              {editMode ? "Updating..." : "Creating..."}
-            </>
+            <div className="flex items-center gap-2">
+              <Spinner className="h-4 w-4" />
+              <span>{editMode ? "Updating..." : "Creating..."}</span>
+            </div>
           ) : (
-            <>{editMode ? "Update Transaction" : "Create Transaction"}</>
+            <span>{editMode ? "Update Transaction" : "Create Transaction"}</span>
           )}
         </Button>
       </div>

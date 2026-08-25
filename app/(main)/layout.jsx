@@ -1,5 +1,8 @@
+//This is the layout for the (main)
+
 import Header from "@/components/header";
-import { getYear } from "date-fns";
+// date-fns is a modern javascript date utility library.
+import { getYear } from "date-fns"; 
 
 export default function MainLayout({ children }) {
   return (

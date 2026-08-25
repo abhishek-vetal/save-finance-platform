@@ -1,3 +1,4 @@
+//Suspense allows React to show a fallback UI while some child content is waiting.
 import { Suspense } from "react";
 import { BarLoader } from "react-spinners";
 
@@ -6,7 +7,7 @@ export default async function DashboardLayout({ children }) {
     <div className="container mx-auto px-4 md:px-6">
       {/* Dashboard heading */}
       <div className="mb-8">
-        <h1 className="text-4xl font-extrabold tracking-tight md:text-5xl bg-linear-to-r from-slate-800 via-violet-600 to-blue-500 dark:from-cyan-400 dark:via-violet-400 dark:to-pink-500 bg-clip-text text-transparent">
+        <h1 className="text-4xl font-extrabold tracking-tight md:text-5xl gradient">
           Dashboard
         </h1>
 
@@ -15,6 +16,7 @@ export default async function DashboardLayout({ children }) {
         </p>
       </div>
 
+      {/* Suspense lets React display a fallback while a child is suspended. */}
       <Suspense
         fallback={
           <div className="mt-6 overflow-hidden rounded-full">

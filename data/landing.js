@@ -3,109 +3,112 @@ import {
   Receipt,
   PieChart,
   CreditCard,
-  Globe,
-  Zap,
+  Repeat,
+  Sparkles,
 } from "lucide-react";
 
 // Stats Data
 export const statsData = [
   {
-    value: "50K+",
-    label: "Active Users",
+    value: "1",
+    label: "Unified Finance Dashboard",
   },
   {
-    value: "$2B+",
-    label: "Transactions Tracked",
+    value: "100%",
+    label: "User-Controlled Data",
   },
   {
-    value: "99.9%",
-    label: "Uptime",
+    value: "24/7",
+    label: "Access to Your Finances",
   },
   {
-    value: "4.9/5",
-    label: "User Rating",
+    value: "AI",
+    label: "Powered Financial Insights",
   },
 ];
 
 // Features Data
 export const featuresData = [
   {
-    icon: <BarChart3 className="h-8 w-8 text-blue-600" />,
-    title: "Advanced Analytics",
+    icon: <BarChart3 className="h-8 w-8 text-amber-600 dark:text-amber-400" />,
+    title: "Financial Dashboard",
     description:
-      "Get detailed insights into your spending patterns with AI-powered analytics",
+      "Get a clear overview of your accounts, balances, spending, and financial activity from a single dashboard.",
   },
   {
-    icon: <Receipt className="h-8 w-8 text-blue-600" />,
-    title: "Smart Receipt Scanner",
+    icon: <Receipt className="h-8 w-8 text-amber-600 dark:text-amber-400" />,
+    title: "Transaction Tracking",
     description:
-      "Extract data automatically from receipts using advanced AI technology",
+      "Create and manage income and expense transactions with categories, descriptions, dates, and account-level tracking.",
   },
   {
-    icon: <PieChart className="h-8 w-8 text-blue-600" />,
-    title: "Budget Planning",
-    description: "Create and manage budgets with intelligent recommendations",
+    icon: <PieChart className="h-8 w-8 text-amber-600 dark:text-amber-400" />,
+    title: "Budget Management",
+    description:
+      "Set a budget, track your spending, and monitor your expenses to stay aware of your financial limits.",
   },
   {
-    icon: <CreditCard className="h-8 w-8 text-blue-600" />,
-    title: "Multi-Account Support",
-    description: "Manage multiple accounts and credit cards in one place",
+    icon: <CreditCard className="h-8 w-8 text-amber-600 dark:text-amber-400" />,
+    title: "Multiple Accounts",
+    description:
+      "Manage multiple current and savings accounts and keep track of their balances in one place.",
   },
   {
-    icon: <Globe className="h-8 w-8 text-blue-600" />,
-    title: "Multi-Currency",
-    description: "Support for multiple currencies with real-time conversion",
+    icon: <Repeat className="h-8 w-8 text-amber-600 dark:text-amber-400" />,
+    title: "Recurring Transactions",
+    description:
+      "Set up recurring income or expenses and manage their schedules without manually creating every transaction.",
   },
   {
-    icon: <Zap className="h-8 w-8 text-blue-600" />,
-    title: "Automated Insights",
-    description: "Get automated financial insights and recommendations",
+    icon: <Sparkles className="h-8 w-8 text-amber-600 dark:text-amber-400" />,
+    title: "AI-Powered Insights",
+    description:
+      "Use AI-powered features to analyze financial information and get smarter insights into your spending and finances.",
   },
 ];
 
 // How It Works Data
 export const howItWorksData = [
   {
-    icon: <CreditCard className="h-8 w-8 text-blue-600" />,
+    icon: <CreditCard className="h-8 w-8 text-amber-600 dark:text-amber-400" />,
     title: "1. Create Your Account",
     description:
-      "Get started in minutes with our simple and secure sign-up process",
+      "Sign up securely with Clerk and create your personal SAVE profile.",
   },
   {
-    icon: <BarChart3 className="h-8 w-8 text-blue-600" />,
-    title: "2. Track Your Spending",
+    icon: <Receipt className="h-8 w-8 text-amber-600 dark:text-amber-400" />,
+    title: "2. Add Your Financial Data",
     description:
-      "Automatically categorize and track your transactions in real-time",
+      "Create your accounts, add income and expense transactions, and set your budget.",
   },
   {
-    icon: <PieChart className="h-8 w-8 text-blue-600" />,
-    title: "3. Get Insights",
+    icon: <BarChart3 className="h-8 w-8 text-amber-600 dark:text-amber-400" />,
+    title: "3. Manage Your Finances",
     description:
-      "Receive AI-powered insights and recommendations to optimize your finances",
+      "Use your dashboard to monitor accounts, transactions, budgets, and spending patterns.",
   },
 ];
 
-// Testimonials Data
 export const testimonialsData = [
   {
-    name: "Sarah Johnson",
-    role: "Small Business Owner",
-    image: "https://randomuser.me/api/portraits/women/75.jpg",
+    name: "James Anderson",
+    role: "Account Management",
+    image: "/testimonial-1.png",
     quote:
-      "Save has transformed how I manage my business finances. The AI insights have helped me identify cost-saving opportunities I never knew existed.",
+      "SAVE gives me a simple way to manage multiple accounts and keep my financial information organized in one place.",
   },
   {
-    name: "Michael Chen",
-    role: "Freelancer",
-    image: "https://randomuser.me/api/portraits/men/76.jpg",
+    name: "Emily Carter",
+    role: "Software Developer",
+    image: "/testimonial-2.png",
     quote:
-      "The receipt scanning feature saves me hours each month. Now I can focus on my work instead of manual data entry and expense tracking.",
+      "Tracking income and expenses becomes much easier when everything is available from a single dashboard.",
   },
   {
-    name: "Emily Rodriguez",
-    role: "Financial Advisor",
-    image: "https://randomuser.me/api/portraits/women/9.jpg",
+    name: "Michael Johnson",
+    role: "Budget Management",
+    image: "/testimonial-3.png",
     quote:
-      "I recommend Save to all my clients. The multi-currency support and detailed analytics make it perfect for international investors.",
+      "Having my budget and spending information together makes it easier to understand where my money is going.",
   },
 ];
