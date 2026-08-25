@@ -24,7 +24,7 @@ export default async function Home() {
         <div className="grid grid-cols-2 gap-10 px-4 md:grid-cols-4 md:px-6">
           {statsData.map((stat, index) => (
             <div key={index} className="text-center">
-              
+
               <h2 className="text-3xl font-bold gradient mx-auto">
                 {stat.value}
               </h2>
@@ -137,7 +137,7 @@ export default async function Home() {
             </p>
 
             <Link href="/dashboard">
-              <Button className="mt-7 px-8 py-6 rounded-xl shadow-md transition-all duration-300 hover:scale-105 hover:shadow-xl bg-black text-white">
+              <Button className="mt-7 px-8 py-6 rounded-xl shadow-md transition-all duration-300 hover:scale-105 hover:shadow-xl bg-emerald-600 hover:bg-emerald-700 text-white font-medium">
                 Start Your Journey
               </Button>
             </Link>

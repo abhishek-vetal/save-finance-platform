@@ -42,7 +42,7 @@ export default function Hero() {
       <Link href="/dashboard">
         <Button
           size="lg"
-          className="mt-8 px-8 py-6 rounded-xl shadow-lg transition-all duration-300 hover:scale-105 hover:shadow-2xl"
+          className="mt-8 px-8 py-6 rounded-xl shadow-lg transition-all duration-300 hover:scale-105 hover:shadow-2xl bg-emerald-600 hover:bg-emerald-700 text-white font-medium"
         >
           Get Started
         </Button>
