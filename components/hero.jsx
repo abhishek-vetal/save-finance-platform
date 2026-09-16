@@ -4,6 +4,7 @@ import Link from "next/link";
 import Image from "next/image";
 import React from "react";
 import { Button } from "@/components/ui/button";
+import { ArrowRight } from "lucide-react";
 
 export default function Hero() {
   const imageRef = React.useRef(null);
@@ -18,17 +19,13 @@ export default function Hero() {
       }
     };
 
-    if (imageRef.current) {
-      imageRef.current.style.transform = `perspective(1000px) rotateX(15deg)`;
-    }
-
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
   return (
     <div className="container mx-auto flex flex-col items-center px-4 text-center md:px-6">
-      {/* Hero title with different gradients in light/dark */}
+      {/* hero title with different gradients in light/dark */}
       <h1 className="pb-3 mt-10 text-5xl font-bold tracking-tight md:text-[110px] leading-none gradient">
         Manage Your Finances <br />
         With Intelligence
@@ -42,13 +39,14 @@ export default function Hero() {
       <Link href="/dashboard">
         <Button
           size="lg"
-          className="mt-8 px-8 py-6 rounded-xl shadow-lg transition-all duration-300 hover:scale-105 hover:shadow-2xl bg-emerald-600 hover:bg-emerald-700 text-white font-medium"
+          className="mt-8 h-12 px-7 rounded-lg font-medium bg-foreground text-background hover:bg-foreground/90 gap-2 transition-colors duration-150"
         >
-          Get Started
+          <span>Get Started</span>
+          <ArrowRight className="h-4 w-4" />
         </Button>
       </Link>
 
-      {/* Hero image with glass effect */}
+      {/* hero image with glass effect */}
       <div
         ref={imageRef}
         className="hero-image-div mt-20 mx-4 overflow-hidden rounded-3xl shadow-2xl will-change-transform"

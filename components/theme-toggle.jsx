@@ -1,37 +1,40 @@
 "use client";
 
 import * as React from "react";
-import { Moon } from "lucide-react";
+import { Moon, Sun } from "lucide-react";
 import { useTheme } from "next-themes";
+import { Button } from "@/components/ui/button";
 
 export function ThemeToggle() {
   const { resolvedTheme, setTheme } = useTheme();
   const [mounted, setMounted] = React.useState(false);
 
-  // Prevent hydration flicker on initial load
   React.useEffect(() => {
     setMounted(true);
   }, []);
 
   if (!mounted) {
     return (
-      <div className="h-9 w-9 rounded-md border border-input bg-background/50 backdrop-blur-sm" />
+      <div className="h-9 w-9 rounded-lg border border-border/60 bg-background/50 backdrop-blur-sm" />
     );
   }
 
-  const toggleTheme = () => {
-    setTheme(resolvedTheme === "light" ? "dark" : "light");
-  };
+  const isDark = resolvedTheme === "dark";
 
   return (
-    <button
-      onClick={toggleTheme}
+    <Button
+      variant="ghost"
+      size="icon"
+      onClick={() => setTheme(isDark ? "light" : "dark")}
       aria-label="Toggle theme"
-      className="inline-flex h-9 w-9 items-center justify-center rounded-md border border-input bg-background text-foreground shadow-sm transition-colors duration-200 hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 active:scale-95"
+      className="h-9 w-9 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-colors duration-150"
     >
-      {/* Single static icon using Shadcn's native foreground color mapping */}
-      <Moon className="h-[1.2rem] w-[1.2rem] text-purple-600" />
+      {isDark ? (
+        <Sun className="h-4 w-4 text-amber-400" />
+      ) : (
+        <Moon className="h-4 w-4 text-neutral-700" />
+      )}
       <span className="sr-only">Toggle theme</span>
-    </button>
+    </Button>
   );
 }

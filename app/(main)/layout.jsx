@@ -1,4 +1,4 @@
-//This is the layout for the (main)
+// this is the layout for the (main)
 
 import Header from "@/components/header";
 // date-fns is a modern javascript date utility library.

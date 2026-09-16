@@ -3,7 +3,7 @@
 import db from "@/lib/prisma";
 import { subDays } from "date-fns";
 
-// take these IDs from the database in which you want to seed the data
+// take these IDs from the database for which you want to seed the data
 const ACCOUNT_ID = "";
 const USER_ID = "";
 
@@ -54,7 +54,7 @@ function getRecurringDetails(date) {
   const interval =
     RECURRING_INTERVALS[Math.floor(Math.random() * RECURRING_INTERVALS.length)];
 
-  // Calculate next recurring date based on interval
+  // calculate next recurring date based on interval
   const nextDate = new Date(date);
   switch (interval) {
     case "DAILY":

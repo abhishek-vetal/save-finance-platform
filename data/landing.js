@@ -7,7 +7,7 @@ import {
   Sparkles,
 } from "lucide-react";
 
-// Stats Data
+// stats data
 export const statsData = [
   {
     value: "1",
@@ -27,7 +27,7 @@ export const statsData = [
   },
 ];
 
-// Features Data
+// features data
 export const featuresData = [
   {
     icon: <BarChart3 className="h-8 w-8 text-amber-600 dark:text-amber-400" />,
@@ -67,7 +67,7 @@ export const featuresData = [
   },
 ];
 
-// How It Works Data
+// how it works data
 export const howItWorksData = [
   {
     icon: <CreditCard className="h-8 w-8 text-amber-600 dark:text-amber-400" />,

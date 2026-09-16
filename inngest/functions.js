@@ -11,11 +11,11 @@ import { Resend } from "resend";
 import EmailTemplate from "@/emails/template";
 import { GoogleGenAI } from "@google/genai";
 
-// We use step in Inngest to break background jobs into smaller, checkpointed units of work so that 
+// we use step in Inngest to break background jobs into smaller, checkpointed units of work so that 
 // previously completed actions are not re-run when failures happen
 
-// Recurring transactions automation.
-// this will happen second --> Process recurring transaction
+// recurring transactions automation
+// this will happen second --> process recurring transaction
 export const processRecurringTransactions = inngest.createFunction(
   {
     id: "process-recurring-transaction",
@@ -27,24 +27,24 @@ export const processRecurringTransactions = inngest.createFunction(
     triggers: { event: "transaction.recurring.process" },
   },
   async ({ event, step }) => {
-    // 1. Validate event data
+    // validate event data
     if (!event?.data?.id || !event?.data?.userId) {
       console.error("Invalid event data", event);
       return { error: "Missing required event data" };
     }
 
-    // 2. Fetch the transaction AND RETURN IT from the step so we can use it below
+    // fetch the transaction and return it from the step so we can use it below
     const transaction = await step.run("fetch-transaction", async () => {
       return await db.transaction.findUnique({
         where: {
-          id: event.data.id, // Fixed: matching the payload key
+          id: event.data.id, 
           userId: event.data.userId,
         },
         include: { account: true },
       });
     });
 
-    // 3. Early validation checks with distinct status messages
+    // early validation checks with distinct status messages
     if (!transaction) {
       return { message: "Transaction not found" };
     }
@@ -53,10 +53,10 @@ export const processRecurringTransactions = inngest.createFunction(
       return { message: "Transaction is not due yet" };
     }
 
-    // 4. Database updates MUST be inside a step.run() in Inngest!
+    // database updates must be inside a step.run() in Inngest
     await step.run("process-database-updates", async () => {
       await db.$transaction(async (tx) => {
-        // A. Create new transaction
+        // create new transaction
         await tx.transaction.create({
           data: {
             type: transaction.type,
@@ -70,7 +70,7 @@ export const processRecurringTransactions = inngest.createFunction(
           },
         });
 
-        // B. Update account balance
+        // update account balance
         const balanceChange =
           transaction.type === "EXPENSE"
             ? -Number(transaction.amount)
@@ -81,7 +81,7 @@ export const processRecurringTransactions = inngest.createFunction(
           data: { balance: { increment: balanceChange } },
         });
 
-        // C. Update last processed date and next recurring date
+        // update last processed date and next recurring date
         await tx.transaction.update({
           where: { id: transaction.id },
           data: {
@@ -99,7 +99,7 @@ export const processRecurringTransactions = inngest.createFunction(
   },
 );
 
-// this will happen first --> Triggerring recurring transaction with events.
+// this will happen first --> triggering recurring transaction with events
 export const triggerRecurringTransaction = inngest.createFunction(
   {
     id: "trigger-recurring-transaction",
@@ -120,7 +120,7 @@ export const triggerRecurringTransaction = inngest.createFunction(
       },
     );
 
-    // Send event for each recurring transaction in batches
+    // send event for each recurring transaction in batches
     if (recurringTransactions.length > 0) {
       const events = recurringTransactions.map((transaction) => {
         return {
@@ -150,7 +150,7 @@ export const checkBudgetAlerts = inngest.createFunction(
     const monthStart = startOfMonth(now);
     const monthEnd = endOfMonth(now);
 
-    // 1. Fetch budgets along with the user's default account info in ONE shot
+    // fetch budgets along with the user's default account info in one shot
     const budgets = await step.run("fetch-budgets", async () => {
       return await db.budget.findMany({
         include: {
@@ -159,9 +159,9 @@ export const checkBudgetAlerts = inngest.createFunction(
       });
     });
 
-    // 2. Loop safely through budgets
+    // loop safely through budgets
     for (const budget of budgets) {
-      // Fetch Aggregated Expenses for this specific user
+      // fetch aggregated expenses for this specific user
       const totalExpense = await step.run(
         `calculate-monthly-total-expense-${budget.userId}`,
         async () => {
@@ -187,14 +187,14 @@ export const checkBudgetAlerts = inngest.createFunction(
       const percentageUsed = (expenseAmount / budgetAmount) * 100;
       const lastAlertSent = budget.lastAlertSent;
 
-      // Check threshold
+      // check threshold
       if (percentageUsed >= 80) {
-        // Skip if an alert went out earlier this month
+        // skip if an alert went out earlier this month
         if (lastAlertSent && isSameMonth(new Date(lastAlertSent), now)) {
           continue;
         }
 
-        // 3. Send Email (Kept completely FLAT, no nesting!)
+        // send email (kept completely flat, no nesting)
         await step.run(`send-budget-alert-${budget.userId}`, async () => {
           const resend = new Resend(process.env.RESEND_API_KEY);
 
@@ -220,10 +220,10 @@ export const checkBudgetAlerts = inngest.createFunction(
           }
         });
 
-        // 4. Update budget alert state sequentially (NOT nested)
+        // update budget alert state sequentially (not nested)
         await step.run(`update-budget-alert-${budget.id}`, async () => {
           return await db.budget.update({
-            where: { id: budget.id }, // Target by budget ID rather than userId for safety
+            where: { id: budget.id }, // target by budget ID rather than userId for safety
             data: { lastAlertSent: now },
           });
         });
@@ -232,7 +232,7 @@ export const checkBudgetAlerts = inngest.createFunction(
   },
 );
 
-// Monthly Report
+// monthly report
 export const generateMonthlyReport = inngest.createFunction(
   {
     id: "generate-monthly-report",
@@ -253,7 +253,7 @@ export const generateMonthlyReport = inngest.createFunction(
 
         const stats = await getUsersMonthlyStats(user.id, lastMonth);
 
-        // Generate AI insights
+        // generate ai insights
         const insights = await generateFinancialInsights(stats, fullMonthName);
 
         const resend = new Resend(process.env.RESEND_API_KEY);
@@ -348,7 +348,7 @@ const generateFinancialInsights = async (stats, month) => {
     });
 
     const rawText = response.text;
-    const insights = JSON.parse(rawText); // Renamed for clarity
+    const insights = JSON.parse(rawText); // renamed for clarity
 
     return insights;
   } catch (error) {
@@ -363,13 +363,13 @@ const generateFinancialInsights = async (stats, month) => {
 
 // this checks whether the transaction is due or not 
 function isTransactionDue(transaction) {
-  // If no lastProcessed date, transaction is due
+  // if no lastProcessed date, transaction is due
   if (!transaction.lastProcessed) return true;
 
   const today = new Date();
   const nextDue = new Date(transaction.nextRecurringDate);
 
-  // Compare with nextDue date
+  // compare with nextDue date
   return nextDue <= today;
 }
 
@@ -391,3 +391,42 @@ function calculateNextRecurringDate(date, interval) {
   }
   return next;
 }
+
+// automatically sync plaid transactions for all connected bank accounts every 6 hours
+export const autoSyncPlaidTransactions = inngest.createFunction(
+  {
+    id: "auto-sync-plaid-transactions",
+    triggers: { cron: "TZ=Asia/Kolkata 0 */6 * * *" },
+  },
+  async ({ step }) => {
+    const plaidAccounts = await step.run("fetch-plaid-accounts", async () => {
+      return await db.account.findMany({
+        where: {
+          plaidAccessToken: { not: null },
+        },
+        select: { id: true, userId: true, name: true },
+      });
+    });
+
+    if (!plaidAccounts.length) {
+      return { message: "No Plaid accounts found to sync" };
+    }
+
+    const { syncPlaidTransactionsForAccount } = await import("@/lib/plaid/sync-transaction");
+
+    const results = [];
+    for (const account of plaidAccounts) {
+      await step.run(`sync-account-${account.id}`, async () => {
+        try {
+          const res = await syncPlaidTransactionsForAccount(account.id, account.userId);
+          results.push({ accountId: account.id, count: res.count, success: true });
+        } catch (err) {
+          console.error(`Inngest Plaid Sync Error for account ${account.id}:`, err.message);
+          results.push({ accountId: account.id, error: err.message, success: false });
+        }
+      });
+    }
+
+    return { success: true, syncedAccountsCount: results.length, details: results };
+  }
+);

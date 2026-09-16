@@ -1,4 +1,4 @@
-// It creates the HTTP handlers needed to connect Inngest with my Next.js application and registers 
+// creates the HTTP handlers needed to connect Inngest with my Next.js application and registers 
 // the functions that Inngest can execute.
 import { serve } from "inngest/next";
 import { inngest } from "../../../inngest/client";
@@ -10,6 +10,7 @@ import {
   generateMonthlyReport,
   processRecurringTransactions,
   triggerRecurringTransaction,
+  autoSyncPlaidTransactions,
 } from "../../../inngest/functions";
 
 export const { GET, POST, PUT } = serve({
@@ -19,5 +20,6 @@ export const { GET, POST, PUT } = serve({
     processRecurringTransactions,
     triggerRecurringTransaction,
     generateMonthlyReport,
+    autoSyncPlaidTransactions,
   ],
 });

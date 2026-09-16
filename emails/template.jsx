@@ -39,7 +39,7 @@ export default function EmailTemplate({
 
         <Body style={styles.body}>
           <Container style={styles.container}>
-            {/* Header */}
+            {/* header */}
 
             <Section style={styles.header}>
               <Text style={styles.logo}>Save</Text>
@@ -47,7 +47,7 @@ export default function EmailTemplate({
               <Text style={styles.subtitle}>Monthly Financial Report</Text>
             </Section>
 
-            {/* Main Content */}
+            {/* main content */}
 
             <Section style={styles.content}>
               <Text style={styles.date}>{data?.month}</Text>
@@ -61,7 +61,7 @@ export default function EmailTemplate({
                 Review your spending trends and insights below.
               </Text>
 
-              {/* Summary Metrics */}
+              {/* summary metrics */}
 
               <Section style={styles.reportCard}>
                 <Row>
@@ -97,7 +97,7 @@ export default function EmailTemplate({
                 </Row>
               </Section>
 
-              {/* Category Breakdown */}
+              {/* category breakdown */}
 
               {data?.stats?.byCategory && (
                 <Section style={styles.reportCard}>
@@ -123,7 +123,7 @@ export default function EmailTemplate({
                 </Section>
               )}
 
-              {/* AI Insights */}
+              {/* ai insights */}
 
               {data?.insights?.length > 0 && (
                 <Section style={styles.reportCard}>
@@ -166,7 +166,7 @@ export default function EmailTemplate({
 
       <Body style={styles.body}>
         <Container style={styles.container}>
-          {/* Header */}
+          {/* header */}
           <Section style={styles.header}>
             <Text style={styles.logo}>Save</Text>
 
@@ -175,7 +175,7 @@ export default function EmailTemplate({
             </Text>
           </Section>
 
-          {/* Main Content */}
+          {/* main content */}
           <Section style={styles.content}>
             <Text style={styles.date}>
               {new Date().toLocaleDateString("en-US", {
@@ -195,7 +195,7 @@ export default function EmailTemplate({
               <strong>{safeData.percentageUsed.toFixed(1)}%</strong>.
             </Text>
 
-            {/* Financial Summary Card */}
+            {/* financial summary card */}
 
             <Section style={styles.metricCard}>
               <Row>
@@ -249,7 +249,7 @@ export default function EmailTemplate({
               financial goals.
             </Text>
 
-            {/* CTA */}
+            {/* cta */}
 
             <Section style={styles.buttonContainer}>
               <a href={safeData.dashboardUrl} style={styles.button}>
@@ -258,7 +258,7 @@ export default function EmailTemplate({
             </Section>
           </Section>
 
-          {/* Footer */}
+          {/* footer */}
 
           <Section style={styles.footer}>
             <Text style={styles.footerText}>

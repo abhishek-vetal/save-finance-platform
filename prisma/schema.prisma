@@ -7,32 +7,39 @@ datasource db {
   provider = "postgresql"
 }
 
-model User { // model name
-  id           String        @id @default(uuid())
-  clerkUserId  String        @unique
-  name         String?
-  email        String?       @unique
-  imageUrl     String?
-  createdAt    DateTime      @default(now())
-  updatedAt    DateTime      @updatedAt
+model User {
+  id          String   @id @default(uuid())
+  clerkUserId String   @unique
+  name        String?
+  email       String?  @unique
+  imageUrl    String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 
   accounts     Account[] // represent relationship with other tables like User 1: M Account
   transactions Transaction[]
   budget       Budget? // 1 to 1 (Optional)
- 
+
   @@map("users") // map the primsa User model to the users table in the database.
 }
 
 model Account {
-  id           String        @id @default(uuid())
-  userId       String
-  name         String?
-  type         AccountType
-  balance      Decimal       @default(0.0)
-  isDefault    Boolean       @default(false)
-  createdAt    DateTime      @default(now())
-  updatedAt    DateTime      @updatedAt
-  
+  id        String      @id @default(uuid())
+  userId    String
+  name      String?
+  type      AccountType
+  balance   Decimal     @default(0.0)
+  isDefault Boolean     @default(false)
+
+  // plaid integration fields
+  plaidAccessToken String? // used to access the plaid item
+  plaidItemId      String?
+  plaidAccountId   String?
+  plaidCursor      String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
   // user is Prisma's relation field. fields specifies the foreign-key field in the current model, 
   // while references specifies the field in the related model that it references.
   user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -43,22 +50,27 @@ model Account {
 }
 
 model Transaction {
-  id                String                @id @default(uuid())
+  id                String                 @id @default(uuid())
   type              TransactionType
   userId            String
   amount            Decimal
   description       String?
   accountId         String
-  date              DateTime              @default(now())
+  date              DateTime               @default(now())
   category          String
-  isRecurring       Boolean               @default(false)
+  isRecurring       Boolean                @default(false)
   recurringInterval RecurringIntervalType?
   nextRecurringDate DateTime?
   lastProcessed     DateTime?
-  createdAt         DateTime              @default(now())
-  updatedAt         DateTime              @updatedAt
-  account           Account               @relation(fields: [accountId], references: [id], onDelete: Cascade)
-  user              User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // plaid integration field (prevents duplicates)
+  plaidTransactionId String? @unique
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  account Account @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId, accountId])
   @@map("transactions")

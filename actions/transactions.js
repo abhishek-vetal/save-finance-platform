@@ -48,7 +48,7 @@ export async function updateTransaction(id, data) {
 
     if (!user) throw new Error("User not found");
 
-    // Get original transaction to calculate balance change
+    // get original transaction to calculate balance change
     const originalTransaction = await db.transaction.findUnique({
       where: {
         userId: user.id,
@@ -61,7 +61,7 @@ export async function updateTransaction(id, data) {
 
     if (!originalTransaction) throw new Error("Transaction not found");
 
-    // Calculate balance changes
+    // calculate balance changes
     const oldBalanceChange =
       originalTransaction.type === "EXPENSE"
         ? -originalTransaction.amount.toNumber()
@@ -72,7 +72,7 @@ export async function updateTransaction(id, data) {
 
     const netBalanceChange = newBalanceChange - oldBalanceChange;
 
-    // Update transaction and account balance in a transaction
+    // update transaction and account balance in a transaction
     const updatedTransaction = await db.$transaction(async (tx) => {
       const updated = await tx.transaction.update({
         where: {
@@ -88,7 +88,7 @@ export async function updateTransaction(id, data) {
         },
       });
 
-      // Update account balance
+      // update account balance
       await tx.account.update({
         where: { id: data.accountId },
         data: {
@@ -121,7 +121,7 @@ export async function createTransactions(data) {
     });
     if (!user) throw new Error("User not found");
 
-    // Arcjet Tranasactions rate limiting not using cause plan upgrade required.
+    // arcjet transactions rate limiting not using cause plan upgrade required
 
     // request() is used to extract the details from the req
     // const req = await request()
@@ -166,11 +166,11 @@ export async function createTransactions(data) {
       throw new Error("Account not found");
     }
 
-    // Calculate new balance
+    // calculate new balance
     const balanceChange = data.type === "EXPENSE" ? -data.amount : data.amount;
     const newBalance = account.balance.toNumber() + balanceChange;
 
-    // Create transaction and update account balance
+    // create transaction and update account balance
     const transaction = await db.$transaction(async (tx) => {
       const newTransaction = await tx.transaction.create({
         data: {
@@ -200,7 +200,7 @@ export async function createTransactions(data) {
   }
 }
 
-// Helper function to calculate next recurring date
+// helper function to calculate next recurring date
 function calculateNextRecurringDate(startDate, interval) {
   const date = new Date(startDate);
 
@@ -227,11 +227,11 @@ export async function scanReceipt(formData) {
     const { userId } = await auth();
     if (!userId) throw new Error("Unauthorized");
 
-    // 1. Extract the file from the FormData
+    // extract the file from the FormData
     const file = formData.get("receipt");
     if (!file) throw new Error("No file provided");
 
-    // 2. THE GEMINI DOCS METHOD: Convert File to Buffer to Base64
+    // convert file to buffer to base64
     const arrayBuffer = await file.arrayBuffer();
     const base64Image = Buffer.from(arrayBuffer).toString("base64");
 
@@ -273,7 +273,7 @@ export async function scanReceipt(formData) {
       const rawText = response.text;
       const receiptData = JSON.parse(rawText);
 
-      // Catch the "empty object" fallback
+      // catch the "empty object" fallback
       if (Object.keys(receiptData).length === 0) {
         throw new Error("Could not recognize this image as a valid receipt.");
       }
@@ -281,10 +281,10 @@ export async function scanReceipt(formData) {
       return {
         success: true,
         data: {
-          // If amount exists, parse it. Otherwise, return null so the form stays empty.
+          // if amount exists, parse it, otherwise return null so the form stays empty
           amount: receiptData.amount ? parseFloat(receiptData.amount) : null,
 
-          // Only create a Date object if Gemini actually found a date
+          // only create a date object if gemini actually found a date
           date: receiptData.date ? new Date(receiptData.date) : null,
 
           description: receiptData.description || "",

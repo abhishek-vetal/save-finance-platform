@@ -21,7 +21,7 @@ export default function ReceiptScanner({ onScanComplete }) {
     const file = event.target.files?.[0];
     if (!file) return;
 
-    // Make sure they actually uploaded an image
+    // make sure they actually uploaded an image
     if (!file.type.startsWith("image/")) {
       toast.error("Please upload an image file.");
       event.target.value = "";
@@ -29,8 +29,8 @@ export default function ReceiptScanner({ onScanComplete }) {
     }
 
     try {
-      // Options to compress image below 1.5MB and max dimension 1920px
-      // Serverless payload limits --> maximum sizes allowed for data sent to or returned by serverless function
+      // options to compress image below 1.5MB and max dimension 1920px
+      // serverless payload limits --> maximum sizes allowed for data sent to or returned by serverless function
       const options = {
         maxSizeMB: 1.5,
         maxWidthOrHeight: 1920,
@@ -39,11 +39,11 @@ export default function ReceiptScanner({ onScanComplete }) {
 
       const compressedFile = await imageCompression(file, options);
 
-      // FormData API used to package a binary file so it can be sent over the network
+      // formData api used to package a binary file so it can be sent over the network
       // to your server or Server Action
       const formData = new FormData();
 
-      // Adds the compressed file to this container under the key name "receipt".
+      // adds the compressed file to this container under the key name "receipt"
       formData.append("receipt", compressedFile);
 
       await scanReceiptFn(formData);
@@ -69,7 +69,7 @@ export default function ReceiptScanner({ onScanComplete }) {
       <div className="absolute -top-10 -right-10 h-24 w-24 rounded-full bg-primary/10 blur-3xl" />
 
       <div className="relative flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        {/* Left section */}
+        {/* left section */}
         <div className="flex items-start gap-3">
           <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 border">
             <Receipt className="h-5 w-5 text-primary" />

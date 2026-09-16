@@ -19,7 +19,7 @@ export default async function Home() {
     <>
       <Hero />
 
-      {/* Stats */}
+      {/* stats */}
       <section className="container mx-auto mt-20 py-20 bg-muted/40 dark:bg-muted/20">
         <div className="grid grid-cols-2 gap-10 px-4 md:grid-cols-4 md:px-6">
           {statsData.map((stat, index) => (
@@ -35,7 +35,7 @@ export default async function Home() {
         </div>
       </section>
 
-      {/* Features */}
+      {/* features */}
       <section className="container mx-auto mt-24">
         <div className="px-4 md:px-6">
           <h2 className="text-center text-3xl font-bold text-foreground">
@@ -61,7 +61,7 @@ export default async function Home() {
         </div>
       </section>
 
-      {/* How it works */}
+      {/* how it works */}
       <section className="container mx-auto mt-24 py-20 rounded-4xl bg-muted/40 dark:bg-muted/20">
         <div className="px-4 md:px-6">
           <h2 className="text-center text-3xl font-bold">How it Works</h2>
@@ -83,7 +83,7 @@ export default async function Home() {
         </div>
       </section>
 
-      {/* Testimonials */}
+      {/* testimonials */}
       <section className="container mx-auto mt-24">
         <div className="px-4 md:px-6">
           <h2 className="text-center text-3xl font-bold">What Our Users Say</h2>
@@ -123,7 +123,7 @@ export default async function Home() {
         </div>
       </section>
 
-      {/* CTA */}
+      {/* cta */}
       <section className="container mx-auto mt-24">
         <div className="py-14 px-6 md:px-12 md:py-20 bg-linear-to-r from-neutral-900 via-neutral-700 to-neutral-900 dark:from-neutral-950 dark:via-neutral-800 dark:to-neutral-950 shadow-xl shadow-neutral-500/10 dark:shadow-none">
           <div className="flex flex-col items-center text-center text-white">
@@ -137,7 +137,10 @@ export default async function Home() {
             </p>
 
             <Link href="/dashboard">
-              <Button className="mt-7 px-8 py-6 rounded-xl shadow-md transition-all duration-300 hover:scale-105 hover:shadow-xl bg-emerald-600 hover:bg-emerald-700 text-white font-medium">
+              <Button
+                size="lg"
+                className="mt-7 h-12 px-7 rounded-lg font-medium bg-white text-neutral-900 hover:bg-neutral-100 transition-colors duration-150"
+              >
                 Start Your Journey
               </Button>
             </Link>

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { format } from "date-fns";
 
@@ -37,7 +37,10 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 
-import { deleteBulkTransactions } from "@/actions/account";
+import {
+  deleteBulkTransactions,
+  getAccountTransactions,
+} from "@/actions/account";
 import { categoryColors } from "@/data/categories";
 import useFetch from "@/hooks/use-fetch";
 
@@ -55,7 +58,6 @@ import {
 } from "lucide-react";
 
 import { toast } from "sonner";
-import { BarLoader } from "react-spinners";
 
 const RECURRING_INTERVALS = {
   DAILY: "Daily",
@@ -64,18 +66,36 @@ const RECURRING_INTERVALS = {
   YEARLY: "Yearly",
 };
 
-export default function TransactionTable({ transactions = [] }) {
+export default function TransactionTable({
+  accountId,
+  initialTransactions = [],
+  initialPagination = {},
+}) {
   const router = useRouter();
+  const isFirstSearch = useRef(true);
 
-  const [sortConfig, setSortConfig] = useState({
-    key: "date",
-    direction: "desc",
-  });
+  const [transactions, setTransactions] = useState(initialTransactions);
+  const [pagination, setPagination] = useState(initialPagination);
+  const [loading, setLoading] = useState(false);
 
   const [selectIDs, setSelectIDs] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [typeFilter, setTypeFilter] = useState("");
   const [recurringFilter, setRecurringFilter] = useState("");
+  const [sortConfig, setSortConfig] = useState({
+    key: "date",
+    direction: "desc",
+  });
+
+  // keep unified filters ref as single source of truth across renders
+  const filtersRef = useRef({
+    search: "",
+    type: "",
+    recurring: "",
+    sortBy: "date",
+    sortOrder: "desc",
+    page: 1,
+  });
 
   const {
     data: deleteTransactionsData,
@@ -84,11 +104,68 @@ export default function TransactionTable({ transactions = [] }) {
     error: deleteError,
   } = useFetch(deleteBulkTransactions);
 
-  // used to confirm when we are deleting the transactions
-  const handleDeleteWithConfirmation = async (selectIDs) => {
-    if (selectIDs.length === 0) return;
+  // sync initial data from parent if props change
+  useEffect(() => {
+    setTransactions(initialTransactions);
+    setPagination(initialPagination);
+  }, [initialTransactions, initialPagination]);
 
-    const count = selectIDs.length;
+  // execute transaction queries using latest merged filter parameters
+  const fetchData = useCallback(
+    async (overrideParams = {}) => {
+      if (!accountId) return;
+
+      const params = { ...filtersRef.current, ...overrideParams };
+      filtersRef.current = params;
+      setLoading(true);
+
+      try {
+        const res = await getAccountTransactions({
+          accountId,
+          page: params.page,
+          limit: 8,
+          search: params.search,
+          type: params.type,
+          recurring: params.recurring,
+          sortBy: params.sortBy,
+          sortOrder: params.sortOrder,
+        });
+
+        if (res.success) {
+          setTransactions(res.transactions);
+          setPagination(res.pagination);
+          setSelectIDs([]);
+        } else {
+          toast.error(res.error || "Failed to fetch transactions");
+        }
+      } catch (err) {
+        toast.error(err.message || "Failed to fetch transactions");
+      } finally {
+        setLoading(false);
+      }
+    },
+    [accountId],
+  );
+
+  // debounce search input without firing on initial component mount
+  useEffect(() => {
+    if (isFirstSearch.current) {
+      isFirstSearch.current = false;
+      return;
+    }
+
+    const timer = setTimeout(() => {
+      fetchData({ search: searchTerm, page: 1 });
+    }, 300);
+
+    return () => clearTimeout(timer);
+  }, [searchTerm, fetchData]);
+
+  // used to confirm when we are deleting the transactions
+  const handleDeleteWithConfirmation = async (idsToDelete) => {
+    if (idsToDelete.length === 0) return;
+
+    const count = idsToDelete.length;
     const confirmDelete = window.confirm(
       count > 1
         ? `Are you sure you want to delete ${count} transactions? This action cannot be undone.`
@@ -97,83 +174,22 @@ export default function TransactionTable({ transactions = [] }) {
 
     if (!confirmDelete) return;
 
-    await deleteTransactionsFn(selectIDs);
+    await deleteTransactionsFn(idsToDelete);
   };
 
   useEffect(() => {
     if (deleteTransactionsData && !deleteTransactionsLoading) {
       toast.success("Transactions deleted successfully");
       setSelectIDs([]);
+      fetchData();
     }
-  }, [deleteTransactionsData, deleteTransactionsLoading]);
+  }, [deleteTransactionsData, deleteTransactionsLoading, fetchData]);
 
   useEffect(() => {
     if (deleteError) {
       toast.error(deleteError?.message || "Transaction deletion failed");
     }
   }, [deleteError]);
-
-  // used for searching, filtering, sorting the transactions 
-  const searchedFilteredSortedTransactions = useMemo(() => {
-    let result = [...transactions];
-
-    if (searchTerm) {
-      const searchStr = searchTerm.toLowerCase();
-      result = result.filter((t) => {
-        const { date, description, category, amount, recurringInterval } = t;
-        const displayDate = date ? format(new Date(date), "PP") : "";
-
-        return Object.values({
-          date: displayDate,
-          description,
-          category,
-          amount,
-          recurringInterval,
-        }).some((value) => {
-          if (value === null || value === undefined) return false;
-          return String(value).toLowerCase().includes(searchStr);
-        });
-      });
-    }
-
-    if (typeFilter) {
-      result = result.filter((t) => t.type === typeFilter);
-    }
-
-    if (recurringFilter) {
-      result =
-        recurringFilter === "recurring"
-          ? result.filter((t) => t.isRecurring)
-          : result.filter((t) => !t.isRecurring);
-    }
-
-    if (sortConfig.key) {
-      result = result.sort((a, b) => {
-        const valueA = a[sortConfig.key];
-        const valueB = b[sortConfig.key];
-
-        if (sortConfig.key === "date") {
-          const dateA = new Date(valueA || 0);
-          const dateB = new Date(valueB || 0);
-          return sortConfig.direction === "asc" ? dateA - dateB : dateB - dateA;
-        }
-
-        if (sortConfig.key === "amount") {
-          const numA = Number(valueA) || 0;
-          const numB = Number(valueB) || 0;
-          return sortConfig.direction === "asc" ? numA - numB : numB - numA;
-        }
-
-        const strA = String(valueA || "");
-        const strB = String(valueB || "");
-        return sortConfig.direction === "asc"
-          ? strA.localeCompare(strB)
-          : strB.localeCompare(strA);
-      });
-    }
-
-    return result;
-  }, [searchTerm, typeFilter, recurringFilter, sortConfig, transactions]);
 
   // clearing all the filters
   const clearAllFilters = () => {
@@ -184,8 +200,43 @@ export default function TransactionTable({ transactions = [] }) {
       key: "date",
       direction: "desc",
     });
-    setCurrentPage(1);
-    setSelectIDs([]);
+    fetchData({
+      search: "",
+      type: "",
+      recurring: "",
+      sortBy: "date",
+      sortOrder: "desc",
+      page: 1,
+    });
+  };
+
+  // handle type filter change
+  const handleTypeChange = (value) => {
+    const newType = value === "ALL" ? "" : value;
+    setTypeFilter(newType);
+    fetchData({ type: newType, page: 1 });
+  };
+
+  // handle recurring filter change
+  const handleRecurringChange = (value) => {
+    const newRecurring = value === "ALL" ? "" : value;
+    setRecurringFilter(newRecurring);
+    fetchData({ recurring: newRecurring, page: 1 });
+  };
+
+  // handle sort column and direction change
+  const handleSortConfig = (key) => {
+    let direction = "desc";
+    if (sortConfig.key === key && sortConfig.direction === "desc") {
+      direction = "asc";
+    }
+    setSortConfig({ key, direction });
+    fetchData({ sortBy: key, sortOrder: direction, page: 1 });
+  };
+
+  // handle pagination page change
+  const handlePageChange = (newPage) => {
+    fetchData({ page: newPage });
   };
 
   // if id present then remove it from selectIDs state else add it in
@@ -197,62 +248,33 @@ export default function TransactionTable({ transactions = [] }) {
     );
   };
 
-  // when the checked is true then remove all items else add all the filtered transactions
+  // when checked is true select all 8 items on the current page
   const handleAllCheckbox = () => {
     setSelectIDs((current) =>
-      current.length === searchedFilteredSortedTransactions.length
+      current.length === transactions.length && transactions.length > 0
         ? []
-        : searchedFilteredSortedTransactions.map((t) => t.id),
+        : transactions.map((t) => t.id),
     );
   };
 
-  // this is used to handle the 
-  const handleSortConfig = (key) => {
-    let direction = "desc";
-    if (sortConfig.key === key && sortConfig.direction === direction) {
-      direction = "asc";
-    }
-    setSortConfig({ key, direction });
-  };
-
-  const TRANSACTIONS_PER_PAGE = 8;
-  const [currentPage, setCurrentPage] = useState(1);
-
-  // total pages in the transaction table
-  const totalPages = Math.max(
-    1,
-    Math.ceil(searchedFilteredSortedTransactions.length / TRANSACTIONS_PER_PAGE),
-  );
-
-  // indexes to get all transactions for the current page
-  const indexOfLastItem = currentPage * TRANSACTIONS_PER_PAGE;
-  const indexOfFirstItem = indexOfLastItem - TRANSACTIONS_PER_PAGE;
-
-  // transactions per page --> 0-7, 8-15, ...
-  const currentPageTransactions = searchedFilteredSortedTransactions.slice(
-    indexOfFirstItem,
-    indexOfLastItem,
-  );
-
-  // pagination should not reset when selectIDs changes
-  useEffect(() => {
-    setCurrentPage(1);
-  }, [searchTerm, typeFilter, recurringFilter, sortConfig]);
+  const currentPage = pagination?.currentPage || filtersRef.current.page || 1;
+  const totalPages = Math.max(1, pagination?.totalPages || 1);
+  const totalCount = pagination?.totalCount || 0;
+  const hasActiveFilters =
+    Boolean(searchTerm) ||
+    Boolean(typeFilter) ||
+    Boolean(recurringFilter) ||
+    sortConfig.key !== "date" ||
+    sortConfig.direction !== "desc";
 
   return (
     <div className="flex flex-col gap-5">
-      {deleteTransactionsLoading && (
-        <div className="overflow-hidden rounded-full">
-          <BarLoader color="#8b5cf6" width={"100%"} />
-        </div>
-      )}
-
-      {/* Filters & Actions */}
+      {/* filters & actions */}
       <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
         <div className="relative flex-1 min-w-70">
           <Search className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input
-            placeholder="Search transactions..."
+            placeholder="Search transactions by category or description..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="h-11 rounded-xl bg-muted/30 pl-10"
@@ -261,8 +283,8 @@ export default function TransactionTable({ transactions = [] }) {
 
         <div className="flex flex-wrap items-center gap-2">
           <Select
-            value={typeFilter}
-            onValueChange={(value) => setTypeFilter(value === "ALL" ? "" : value)}
+            value={typeFilter || "ALL"}
+            onValueChange={handleTypeChange}
           >
             <SelectTrigger className="h-11 w-36 rounded-xl">
               <SelectValue placeholder="All Types" />
@@ -275,10 +297,8 @@ export default function TransactionTable({ transactions = [] }) {
           </Select>
 
           <Select
-            value={recurringFilter}
-            onValueChange={(value) =>
-              setRecurringFilter(value === "ALL" ? "" : value)
-            }
+            value={recurringFilter || "ALL"}
+            onValueChange={handleRecurringChange}
           >
             <SelectTrigger className="h-11 w-44 rounded-xl">
               <SelectValue placeholder="All Transactions" />
@@ -294,40 +314,35 @@ export default function TransactionTable({ transactions = [] }) {
             <Button
               variant="destructive"
               onClick={() => handleDeleteWithConfirmation(selectIDs)}
-              className="h-11 rounded-xl"
+              className="h-11 rounded-lg"
             >
               <Trash2 className="mr-1 h-4 w-4" />
               Delete Selected ({selectIDs.length})
             </Button>
           )}
 
-          {(searchTerm ||
-            typeFilter ||
-            recurringFilter ||
-            sortConfig.key !== "date" ||
-            sortConfig.direction !== "desc" ||
-            selectIDs.length > 0) && (
-              <TooltipProvider>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button
-                      variant="outline"
-                      className="h-10 rounded-xl"
-                      onClick={clearAllFilters}
-                    >
-                      <X className="h-4 w-4" />
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    <p>Clear Filters</p>
-                  </TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
-            )}
+          {(hasActiveFilters || selectIDs.length > 0) && (
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant="outline"
+                    className="h-10 rounded-lg"
+                    onClick={clearAllFilters}
+                  >
+                    <X className="h-4 w-4" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>Clear Filters</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          )}
         </div>
       </div>
 
-      {/* Table */}
+      {/* table */}
       <div className="overflow-hidden rounded-3xl border bg-card shadow-sm">
         <Table>
           <TableHeader>
@@ -335,15 +350,14 @@ export default function TransactionTable({ transactions = [] }) {
               <TableHead className="w-12 pl-4">
                 <Checkbox
                   checked={
-                    selectIDs.length ===
-                    searchedFilteredSortedTransactions.length &&
-                    searchedFilteredSortedTransactions.length > 0
+                    selectIDs.length === transactions.length &&
+                    transactions.length > 0
                   }
                   onCheckedChange={handleAllCheckbox}
                 />
               </TableHead>
 
-              {/* Date Column */}
+              {/* date column */}
               <TableHead
                 className="w-32 cursor-pointer select-none"
                 onClick={() => handleSortConfig("date")}
@@ -364,7 +378,7 @@ export default function TransactionTable({ transactions = [] }) {
 
               <TableHead className="min-w-50">Description</TableHead>
 
-              {/* Category Column */}
+              {/* category column */}
               <TableHead
                 className="cursor-pointer select-none"
                 onClick={() => handleSortConfig("category")}
@@ -383,7 +397,7 @@ export default function TransactionTable({ transactions = [] }) {
                 </div>
               </TableHead>
 
-              {/* Amount Column */}
+              {/* amount column */}
               <TableHead
                 className="cursor-pointer select-none text-right"
                 onClick={() => handleSortConfig("amount")}
@@ -408,7 +422,7 @@ export default function TransactionTable({ transactions = [] }) {
           </TableHeader>
 
           <TableBody>
-            {currentPageTransactions.length === 0 ? (
+            {transactions.length === 0 ? (
               <TableRow>
                 <TableCell
                   colSpan={7}
@@ -418,7 +432,7 @@ export default function TransactionTable({ transactions = [] }) {
                 </TableCell>
               </TableRow>
             ) : (
-              currentPageTransactions.map((transaction) => (
+              transactions.map((transaction) => (
                 <TableRow
                   key={transaction.id}
                   className="transition-colors hover:bg-muted/40"
@@ -447,7 +461,7 @@ export default function TransactionTable({ transactions = [] }) {
                     </TooltipProvider>
                   </TableCell>
 
-                  {/* Category */}
+                  {/* category */}
                   <TableCell>
                     <div className="flex items-center gap-2">
                       <span
@@ -463,7 +477,7 @@ export default function TransactionTable({ transactions = [] }) {
                     </div>
                   </TableCell>
 
-                  {/* Formatted Rupee Amount */}
+                  {/* formatted rupee amount */}
                   <TableCell
                     className={`text-right font-bold tabular-nums ${transaction.type === "EXPENSE"
                       ? "text-red-500"
@@ -477,7 +491,7 @@ export default function TransactionTable({ transactions = [] }) {
                     })}
                   </TableCell>
 
-                  {/* Recurring Status */}
+                  {/* recurring status */}
                   <TableCell>
                     <TooltipProvider>
                       {transaction.isRecurring ? (
@@ -516,7 +530,7 @@ export default function TransactionTable({ transactions = [] }) {
                     </TooltipProvider>
                   </TableCell>
 
-                  {/* Row Actions Dropdown */}
+                  {/* row actions dropdown */}
                   <TableCell className="pr-4">
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
@@ -557,15 +571,15 @@ export default function TransactionTable({ transactions = [] }) {
         </Table>
       </div>
 
-      {/* Pagination Footer */}
-      {searchedFilteredSortedTransactions.length > TRANSACTIONS_PER_PAGE && (
+      {/* pagination footer */}
+      {totalPages > 1 && (
         <div className="flex items-center justify-center gap-3 pt-2">
           <Button
             variant="outline"
-            className="rounded-xl"
+            className="rounded-lg"
             size="sm"
-            onClick={() => setCurrentPage((curr) => curr - 1)}
-            disabled={currentPage === 1}
+            onClick={() => handlePageChange(currentPage - 1)}
+            disabled={currentPage <= 1 || loading}
           >
             Previous
           </Button>
@@ -576,12 +590,10 @@ export default function TransactionTable({ transactions = [] }) {
 
           <Button
             variant="outline"
-            className="rounded-xl"
+            className="rounded-lg"
             size="sm"
-            onClick={() =>
-              setCurrentPage((curr) => curr + 1)
-            }
-            disabled={currentPage === totalPages}
+            onClick={() => handlePageChange(currentPage + 1)}
+            disabled={currentPage >= totalPages || loading}
           >
             Next
           </Button>

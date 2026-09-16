@@ -4,7 +4,7 @@ export default function NotFound() {
   return (
     <div className="min-h-screen flex items-center justify-center mt-10 px-6 bg-background">
       <div className="max-w-lg p-8 text-center bg-card rounded-3xl shadow-sm dark:shadow-xl">
-        {/* Light mode and dark mode use different gradients */}
+        {/* light mode and dark mode use different gradients */}
         <h1 className="text-[120px] font-extrabold tracking-tight leading-none bg-linear-to-r from-slate-800 via-violet-600 to-blue-500 bg-clip-text text-transparent">
           404
         </h1>
@@ -21,7 +21,7 @@ export default function NotFound() {
         <div className="mt-8">
           <Link
             href="/"
-            className="px-6 py-3 rounded-xl bg-primary text-primary-foreground shadow-md transition-all duration-300 hover:scale-[1.03] hover:shadow-lg"
+            className="inline-flex items-center justify-center px-6 py-2.5 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 text-sm font-medium transition-colors duration-150"
           >
             Go Home
           </Link>

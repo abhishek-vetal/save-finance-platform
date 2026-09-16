@@ -39,7 +39,7 @@ export default function BudgetProgress({ monthlyBudget, currentMonthExpenses = 0
   };
 
   useEffect(() => {
-    // Wait until we actually have a response from the server for the first render value is undefined
+    // wait until we actually have a response from the server for the first render value is undefined
     if (updateBudgetData) {
       if (!updateBudgetData.success) {
         toast.error(updateBudgetData.error || "Failed to update budget");
@@ -52,7 +52,7 @@ export default function BudgetProgress({ monthlyBudget, currentMonthExpenses = 0
     }
   }, [updateBudgetData]);
 
-  // Reset input if user cancels editing mid-way
+  // reset input if user cancels editing mid-way
   const handleCancel = () => {
     setIsEditing(false);
     setInput(budget.toString());
@@ -96,7 +96,7 @@ export default function BudgetProgress({ monthlyBudget, currentMonthExpenses = 0
                   variant="ghost"
                   size="icon"
                   disabled={updateBudgetLoading}
-                  className="h-9 w-9 rounded-xl bg-green-500/10 text-green-600 transition-all hover:scale-105 hover:bg-green-500/20"
+                  className="h-8 w-8 rounded-lg bg-green-500/10 text-green-600 hover:bg-green-500/20 transition-colors duration-150"
                 >
                   {updateBudgetLoading ? (
                     <Spinner className="h-4 w-4" />
@@ -110,7 +110,7 @@ export default function BudgetProgress({ monthlyBudget, currentMonthExpenses = 0
                   variant="ghost"
                   size="icon"
                   disabled={updateBudgetLoading}
-                  className="h-9 w-9 rounded-xl bg-red-500/10 text-red-500 transition-all hover:scale-105 hover:bg-red-500/20"
+                  className="h-8 w-8 rounded-lg bg-red-500/10 text-red-500 hover:bg-red-500/20 transition-colors duration-150"
                 >
                   <X className="h-4 w-4 stroke-[2.5]" />
                 </Button>
@@ -120,7 +120,7 @@ export default function BudgetProgress({ monthlyBudget, currentMonthExpenses = 0
                 onClick={() => setIsEditing(true)}
                 variant="outline"
                 size="icon"
-                className="h-9 w-9 rounded-xl text-muted-foreground transition-all hover:scale-105"
+                className="h-8 w-8 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-colors duration-150"
               >
                 <Pencil className="h-4 w-4" />
               </Button>

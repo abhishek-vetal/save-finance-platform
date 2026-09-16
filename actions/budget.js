@@ -60,7 +60,7 @@ export async function updateBudget(updateAmount) {
       throw new Error("Invalid budget amount");
     }
 
-    // To update a budget if it exists or create it if it does not exist in Prisma, use the upsert method
+    // to update a budget if it exists or create it if it does not exist in Prisma, use the upsert method
     const upsertBudget = await db.budget.upsert({
       where: { userId: user.id },
       update: { amount: updateAmount, lastAlertSent: null },

@@ -1,4 +1,4 @@
-// This is the layout for the entire app.
+// this is the layout for the entire app.
 
 import { Inter } from "next/font/google";
 import "./globals.css";
@@ -10,7 +10,7 @@ import { ThemeAwareToaster } from "@/components/theme-toaster";
 // create font configuration.
 const inter = Inter({ subsets: ["latin"] }); 
 
-// Next.js uses the exported metadata object to generate the appropriate HTML metadata for the application.
+// next.js uses the exported metadata object to generate the appropriate HTML metadata for the application.
 export const metadata = {
   title: "Save",
   description: "One Stop Finance",
@@ -25,7 +25,7 @@ export default function RootLayout({ children }) {
       // here font configuration will be applied
       className={inter.className}
       >
-      {/* A provider makes certain functionality/context available to components underneath it. */}
+      {/* a provider makes certain functionality/context available to components underneath it */}
       <ClerkProvider>
         <body className="min-h-screen bg-background text-foreground transition-colors duration-300">
           <ThemeProvider

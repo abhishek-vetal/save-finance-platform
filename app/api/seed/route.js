@@ -1,13 +1,13 @@
 import { NextResponse } from "next/server";
-// Adjust the import path if your actions folder is located elsewhere
+// adjust the import path if your actions folder is located elsewhere
 import { seedTransactions } from "@/actions/seed"; 
 
 export async function GET() {
   try {
-    // Trigger the function from your actions file
+    // trigger the function from your actions file
     const result = await seedTransactions();
     
-    // Return the result to the browser
+    // return the result to the browser
     return NextResponse.json(result);
     
   } catch (error) {

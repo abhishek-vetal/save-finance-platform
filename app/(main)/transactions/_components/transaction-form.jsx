@@ -99,6 +99,34 @@ export default function AddTransactionsForm({
         },
   });
 
+  // reset/sync form values whenever switching between edit and add mode
+  useEffect(() => {
+    if (editMode && initialData) {
+      reset({
+        type: initialData.type,
+        amount: initialData.amount,
+        description: initialData.description || "",
+        accountId: initialData.accountId,
+        category: initialData.category,
+        date: new Date(initialData.date),
+        isRecurring: initialData.isRecurring || false,
+        ...(initialData.recurringInterval && {
+          recurringInterval: initialData.recurringInterval,
+        }),
+      });
+    } else if (!editMode) {
+      reset({
+        type: "EXPENSE",
+        amount: "",
+        description: "",
+        accountId: defaultAccountId,
+        category: "",
+        date: new Date(),
+        isRecurring: false,
+      });
+    }
+  }, [editMode, initialData, reset, defaultAccountId]);
+
   const {
     data: transactionResult,
     loading: transactionLoading,
@@ -118,7 +146,7 @@ export default function AddTransactionsForm({
   // when type is changed old category will not match with new type so handle that
   const handleTypeChange = (newType) => {
     setValue("type", newType);
-    // Reset category if it doesn't belong to the newly selected type
+    // reset category if it doesn't belong to the newly selected type
     const isValidCategory = categories.some(
       (c) => c.name === category && c.type === newType
     );
@@ -188,7 +216,7 @@ export default function AddTransactionsForm({
     <form onSubmit={handleSubmit(onSubmit)} className="mt-8 flex flex-col gap-6">
       {!editMode && <ReceiptScanner onScanComplete={handleScanComplete} />}
 
-      {/* Transaction Type */}
+      {/* transaction type */}
       <div className="flex flex-col gap-2">
         <label className="text-sm font-medium">Type</label>
         <Select value={type} onValueChange={(value) => handleTypeChange(value)}>
@@ -207,7 +235,7 @@ export default function AddTransactionsForm({
         )}
       </div>
 
-      {/* Amount and Account */}
+      {/* amount and account */}
       <div className="grid gap-5 md:grid-cols-2">
         <div className="flex flex-col gap-2">
           <label className="text-sm font-medium">Amount</label>
@@ -266,7 +294,7 @@ export default function AddTransactionsForm({
         </div>
       </div>
 
-      {/* Category */}
+      {/* category */}
       <div className="flex flex-col gap-2">
         <label className="text-sm font-medium">Category</label>
         <Select
@@ -291,7 +319,7 @@ export default function AddTransactionsForm({
         )}
       </div>
 
-      {/* Date */}
+      {/* date */}
       <div className="flex flex-col gap-2">
         <label className="text-sm font-medium">Date</label>
         <Popover open={calendarOpen} onOpenChange={(value) => setCalendarOpen(value)}>
@@ -323,7 +351,7 @@ export default function AddTransactionsForm({
         )}
       </div>
 
-      {/* Description */}
+      {/* description */}
       <div className="flex flex-col gap-2">
         <label className="text-sm font-medium">Description</label>
         <Input
@@ -336,7 +364,7 @@ export default function AddTransactionsForm({
         )}
       </div>
 
-      {/* Recurring Switch */}
+      {/* recurring switch */}
       <div className="flex items-center justify-between rounded-2xl bg-muted/40 p-5">
         <div className="flex flex-col gap-1">
           <label className="text-base font-semibold">Recurring Transaction</label>
@@ -355,7 +383,7 @@ export default function AddTransactionsForm({
         />
       </div>
 
-      {/* Recurring Interval */}
+      {/* recurring interval */}
       {isRecurring && (
         <div className="flex flex-col gap-2">
           <label className="text-sm font-medium">Recurring Interval</label>
@@ -383,12 +411,12 @@ export default function AddTransactionsForm({
         </div>
       )}
 
-      {/* Actions */}
+      {/* actions */}
       <div className="grid grid-cols-2 gap-4 pt-2">
         <Button
           type="button"
           variant="outline"
-          className="h-11 rounded-xl"
+          className="h-11 rounded-lg"
           onClick={() => router.back()}
         >
           Cancel
@@ -397,7 +425,7 @@ export default function AddTransactionsForm({
         <Button
           type="submit"
           disabled={transactionLoading}
-          className="h-11 rounded-xl shadow-sm transition-all duration-300 hover:shadow-lg"
+          className="h-11 rounded-lg"
         >
           {transactionLoading ? (
             <div className="flex items-center gap-2">

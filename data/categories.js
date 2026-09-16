@@ -1,5 +1,5 @@
 export const defaultCategories = [
-  // Income Categories
+  // income categories
   {
     id: "salary",
     name: "Salary",
@@ -43,7 +43,7 @@ export const defaultCategories = [
     icon: "Plus",
   },
 
-  // Expense Categories
+  // expense categories
   {
     id: "housing",
     name: "Housing",

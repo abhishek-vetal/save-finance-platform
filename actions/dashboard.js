@@ -6,7 +6,7 @@ import db from "@/lib/prisma";
 import { auth } from "@clerk/nextjs/server";
 import { revalidatePath } from "next/cache"; 
 
-// We are doing serialization to convert complex database objects into standard JavaScript numbers 
+// we are doing serialization to convert complex database objects into standard JavaScript numbers 
 // because Next.js cannot pass complex objects directly from the server to the client frontend.
 const serializeTransaction = (obj) => {
   const serialized = { ...obj };
@@ -35,7 +35,7 @@ export async function getUserTransactions() {
     throw new Error("User not found");
   }
 
-  // Get all user transactions
+  // get all user transactions
   const transactions = await db.transaction.findMany({
     where: { userId: user.id },
     orderBy: { date: "desc" },
@@ -88,7 +88,7 @@ export async function deleteUserAccount(accountId) {
     });
     if (!user) throw new Error("User not found");
 
-    // SECURITY CHECK: Verify this account actually belongs to this user
+    // security check: verify this account actually belongs to this user
     const account = await db.account.findUnique({
       where: { id: accountId },
     });
@@ -98,8 +98,8 @@ export async function deleteUserAccount(accountId) {
       throw new Error("You do not have permission to delete this account");
 
     // this is the database transaction 
-    // In database terminology, a "transaction" is an all-or-nothing wrapper.
-    // Prisma guarantees that either both deletions succeed, or neither do.
+    // in database terminology, a "transaction" is an all-or-nothing wrapper.
+    // prisma guarantees that either both deletions succeed, or neither do.
     await db.$transaction(async (tx) => {
       await tx.transaction.deleteMany({
         where: {
@@ -114,7 +114,7 @@ export async function deleteUserAccount(accountId) {
       });
     });
 
-    // Clear the saved cache for the /dashboard page, it means update the UI
+    // clear the saved cache for the /dashboard page, it means update the UI
     revalidatePath("/dashboard");
 
     return { success: true };
@@ -163,7 +163,7 @@ export async function createAccount(data) {
       },
     });
 
-    // Serialize the account before returning
+    // serialize the account before returning
     const serializedAccount = serializeTransaction(newAccount);
 
     // use to fetch new values.

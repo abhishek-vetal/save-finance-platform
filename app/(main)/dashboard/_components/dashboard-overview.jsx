@@ -69,7 +69,7 @@ export default function DashboardOverview({ accounts, transactions }) {
     return acc;
   }, {});
 
-  // Inject the 'fill' color directly into the data!
+  // inject the 'fill' color directly into the data
   const piechartData = Object.entries(expenseByCategory).map(
     ([category, amount], index) => ({
       name: category,
@@ -82,7 +82,7 @@ export default function DashboardOverview({ accounts, transactions }) {
 
   return (
     <div className="grid gap-6 md:grid-cols-2">
-      {/* Recent Transactions */}
+      {/* recent transactions */}
       <Card className="rounded-3xl bg-card shadow-sm transition-all duration-300 hover:shadow-xl">
         <CardHeader className="flex items-center justify-between pb-5">
           <CardTitle className="text-lg font-bold">
@@ -153,7 +153,7 @@ export default function DashboardOverview({ accounts, transactions }) {
         </CardContent>
       </Card>
 
-      {/* Expense Breakdown */}
+      {/* expense breakdown */}
       <Card className="rounded-3xl bg-card shadow-sm transition-all duration-300 hover:shadow-xl">
         <CardHeader className="pb-5">
           <CardTitle className="text-lg font-bold flex items-center justify-between">
@@ -188,7 +188,7 @@ export default function DashboardOverview({ accounts, transactions }) {
                       content={<CustomTooltip />}
                       cursor={{ fill: "transparent" }}
                       isAnimationActive={true}
-                      // Locks the tooltip to the top edge, but lets it follow your mouse left/right
+                      // locks the tooltip to the top edge, but lets it follow your mouse left/right
                       position={{ y: 0, x: 0 }}
                     />
                   </PieChart>
@@ -218,7 +218,7 @@ export default function DashboardOverview({ accounts, transactions }) {
                       key={item.name}
                       className="flex items-center justify-between rounded-xl bg-muted/40 p-3 transition-all duration-300 hover:bg-muted"
                     >
-                      {/* Left Side: Dot and Category Name */}
+                      {/* left side: dot and category name */}
                       <div className="flex items-center gap-2 overflow-hidden pr-2">
                         <div
                           className="h-3 w-3 shrink-0 rounded-full"
@@ -227,7 +227,7 @@ export default function DashboardOverview({ accounts, transactions }) {
                         <span className="truncate text-sm capitalize">{item.name}</span>
                       </div>
 
-                      {/* Right Side: Tabular Alignment */}
+                      {/* right side: tabular alignment */}
                       <div className="flex items-center justify-end gap-2 text-right">
                         <span className="text-sm font-bold tabular-nums">
                           ₹{item.value.toLocaleString(undefined, {

@@ -16,9 +16,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { endOfDay, format, startOfDay, subDays } from "date-fns";
+import { getAccountChartData } from "@/actions/account";
+import useFetch from "@/hooks/use-fetch";
+import { format } from "date-fns";
 import { ArrowDownRight, ArrowUpRight } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   Bar,
   BarChart,
@@ -38,7 +40,7 @@ const DATE_RANGES = {
   ALL: { label: "All Time", days: null },
 };
 
-// Custom Tooltip 
+// custom tooltip
 const CustomTooltip = ({ active, payload, label }) => {
   if (active && payload) {
     return (
@@ -71,28 +73,50 @@ const CustomTooltip = ({ active, payload, label }) => {
   return null;
 };
 
-export default function AccountChart({ transactions }) {
+export default function AccountChart({ transactions: initialTransactions = [], accountId }) {
   const [dateRange, setDateRange] = useState("1M");
+  const [transactions, setTransactions] = useState(initialTransactions);
 
-  const filteredData = useMemo(() => {
-    const range = DATE_RANGES[dateRange];
-    const now = new Date();
-    
-    // subtract (days - 1) to get the exact range
-    const startDate = range.days
-      ? startOfDay(subDays(now, range.days - 1))
-      : startOfDay(new Date(0));
+  const {
+    data: fetchedChartData,
+    loading: chartLoading,
+    fn: fetchChartDataFn,
+  } = useFetch(getAccountChartData);
 
-    const filteredTransactions = transactions.filter((t) => {
-      // used endOfDay so that will consider the transaction till last millisecond of today
-      return new Date(t.date) >= startDate && new Date(t.date) <= endOfDay(now);
-    });
+  // sync initial data when parent props change only if on default range
+  useEffect(() => {
+    if (dateRange === "1M") {
+      setTransactions(initialTransactions);
+    }
+  }, [initialTransactions, dateRange]);
 
-    const groupedTransactionIncomeAndExpense = filteredTransactions.reduce((acc, transaction) => {
+  // update chart transactions when new range data arrives
+  useEffect(() => {
+    if (fetchedChartData) {
+      setTransactions(fetchedChartData);
+    }
+  }, [fetchedChartData]);
+
+  // handle date range change and query only the required days
+  const handleRangeChange = async (selectedRange) => {
+    setDateRange(selectedRange);
+    if (accountId) {
+      await fetchChartDataFn(accountId, selectedRange);
+    }
+  };
+
+  // group database transactions by day for chart display
+  const groupedData = useMemo(() => {
+    const grouped = transactions.reduce((acc, transaction) => {
       const date = format(new Date(transaction.date), "MMM dd");
 
       if (!acc[date]) {
-        acc[date] = { date, Income: 0, Expense: 0 };
+        acc[date] = {
+          date,
+          Income: 0,
+          Expense: 0,
+          timestamp: new Date(transaction.date).getTime(),
+        };
       }
 
       transaction.type === "INCOME"
@@ -101,24 +125,20 @@ export default function AccountChart({ transactions }) {
 
       return acc;
     }, {});
-    
-    // since transactions are in descending order I just reverse the result 
-    // I can also sort from based on the date in desc order
-    // return Object.values(groupedTransactionIncomeAndExpense).reverse();
 
-    return Object.values(groupedTransactionIncomeAndExpense).sort(
-      (a, b) => new Date(a.date) - new Date(b.date),
-    );
-  }, [transactions, dateRange]);
+    return Object.values(grouped).sort((a, b) => a.timestamp - b.timestamp);
+  }, [transactions]);
 
   const totals = useMemo(() => {
-    return filteredData.reduce((acc, day) => {
+    return groupedData.reduce(
+      (acc, day) => {
         acc.Income += day.Income;
         acc.Expense += day.Expense;
-
         return acc;
-      },{ Income: 0, Expense: 0 });
-  }, [filteredData]);
+      },
+      { Income: 0, Expense: 0 },
+    );
+  }, [groupedData]);
 
   const netTotal = useMemo(() => {
     return totals.Income - totals.Expense;
@@ -140,7 +160,7 @@ export default function AccountChart({ transactions }) {
         <CardAction>
           <Select
             value={dateRange}
-            onValueChange={(value) => setDateRange(value)}
+            onValueChange={handleRangeChange}
           >
             <SelectTrigger className="w-40 rounded-xl">
               <SelectValue placeholder="Select Range" />
@@ -160,7 +180,7 @@ export default function AccountChart({ transactions }) {
       </CardHeader>
 
       <CardContent>
-        {/* Statistics cards */}
+        {/* statistics cards */}
         <div className="mb-8 grid gap-4 md:grid-cols-3">
           <div className="relative overflow-hidden rounded-2xl bg-card p-5 shadow-sm">
             <div className="absolute -top-6 -right-6 h-20 w-20 rounded-full bg-green-500/10 blur-2xl" />
@@ -230,11 +250,11 @@ export default function AccountChart({ transactions }) {
           </div>
         </div>
 
-        {/* Chart */}
+        {/* chart */}
         <div className="h-80 w-full min-h-75">
           <ResponsiveContainer width="100%" height={310}>
             <BarChart
-              data={filteredData}
+              data={groupedData}
               margin={{
                 top: 20,
                 right: 10,
@@ -265,7 +285,7 @@ export default function AccountChart({ transactions }) {
                 width={80}
               />
 
-              {/* CustomTooltip */}
+              {/* custom tooltip */}
               <Tooltip
                 content={<CustomTooltip />}
                 cursor={{
