@@ -1,36 +1,136 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# SAVE — AI-Powered Personal Finance Platform
+
+SAVE is a full-stack personal finance platform that helps users manage their finances, track transactions, create budgets, connect bank accounts, and gain AI-powered insights into their spending.
+
+## Live Demo
+
+[View Live Demo](https://save-finance-platform.vercel.app/)
+
+## Features
+
+- Create and manage financial accounts
+- Connect bank accounts using Plaid
+- Automatically synchronize bank transactions
+- Categorize and manage transactions
+- Create and track monthly budgets
+- Receive budget alerts when spending reaches 80% of the budget
+- Generate monthly financial reports
+- Get AI-powered spending insights
+- Scan receipts using AI and extract transaction details
+- View transaction analytics and spending trends
+- Responsive interface for desktop and mobile devices
+- Authentication and user-specific financial data
+
+## AI Features
+
+### AI Financial Insights
+
+The application uses the Gemini API to analyze financial data and provide spending insights in monthly financial reports.
+
+### AI Receipt Scanning
+
+Users can upload a receipt and use AI to extract relevant transaction information such as:
+
+- Amount
+- Date
+- Transaction details
+- Description
+
+The extracted information can then be reviewed and confirmed by the user.
+
+## Bank Integration
+
+The application uses Plaid to connect users' bank accounts and synchronize transaction data.
+
+The synchronization workflow handles:
+
+- New transactions
+- Updated transactions
+- Removed transactions
+- Duplicate transaction prevention
+
+## Budget Management
+
+Users can create monthly budgets and track their spending against them.
+
+When spending reaches 80% of a budget, the application can send an alert using Inngest and Resend.
+
+## Transaction Analytics
+
+Transaction data is visualized using Recharts, allowing users to analyze their financial activity across different time periods, including:
+
+- 7 days
+- 1 month
+- 3 months
+- 6 months
+- All transactions
+
+## Tech Stack
+
+### Frontend
+
+- Next.js
+- React
+- TypeScript
+- Tailwind CSS
+- shadcn/ui
+- Recharts
+
+### Backend
+
+- Next.js
+- Prisma
+- PostgreSQL
+
+### Authentication
+
+- Clerk
+
+### Financial Data
+
+- Plaid
+
+### AI
+
+- Gemini API
+
+### Background Jobs & Email
+
+- Inngest
+- Resend
+
+### Validation
+
+- Zod
+
+## Security & Data Handling
+
+- User authentication with Clerk
+- User-specific financial data access
+- Database-backed transaction management
+- Duplicate transaction prevention
+- Database-backed rate limiting for transaction creation
+
+## What I Practiced
+
+This project helped me practice:
+
+- Building a full-stack application with Next.js
+- Designing database schemas with Prisma and PostgreSQL
+- Integrating third-party APIs
+- Working with financial data through Plaid
+- Implementing authentication and user-specific data access
+- Building AI-powered application features
+- Processing uploaded receipts with AI
+- Implementing background workflows
+- Sending transactional emails
+- Building financial dashboards and data visualizations
+- Implementing database-backed rate limiting
+- Building responsive interfaces with React and shadcn/ui
 
 ## Getting Started
 
-First, run the development server:
+Clone the repository and install the dependencies:
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
-
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
-
-You can start editing the page by modifying `app/page.js`. The page auto-updates as you edit the file.
-
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+npm install
