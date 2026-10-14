@@ -54,6 +54,25 @@
   --color-foreground: var(--foreground);
   --color-background: var(--background);
 
+  /* Extended semantic fintech tokens */
+  --color-positive: var(--positive);
+  --color-positive-foreground: var(--positive-foreground);
+  --color-negative: var(--negative);
+  --color-negative-foreground: var(--negative-foreground);
+  --color-info: var(--info);
+  --color-info-foreground: var(--info-foreground);
+  --color-accent-gold: var(--accent-gold);
+  --color-accent-gold-hover: var(--accent-gold-hover);
+  --color-muted-disabled: var(--muted-disabled);
+
+  /* Map standard utility colors to theme variables for consistency */
+  --color-green-500: var(--positive);
+  --color-green-600: var(--positive);
+  --color-red-500: var(--negative);
+  --color-red-600: var(--negative);
+  --color-amber-400: var(--accent-gold);
+  --color-amber-500: var(--accent-gold);
+
   /* Border radius system */
   --radius-sm: calc(var(--radius) * 0.6);
   --radius-md: calc(var(--radius) * 0.8);
@@ -66,7 +85,6 @@
 
 /* LIGHT THEME */
 :root {
-  /* Added a microscopic cool tint to the light mode for a softer feel */
   --background: oklch(0.99 0.005 275);
   --foreground: oklch(0.145 0 0);
 
@@ -89,43 +107,93 @@
   --accent-foreground: oklch(0.205 0 0);
 
   --destructive: oklch(0.577 0.245 27.325);
+  --destructive-foreground: oklch(0.985 0 0);
 
   --border: oklch(0.922 0 0);
   --input: oklch(0.922 0 0);
   --ring: oklch(0.708 0 0);
 
-  --radius: 0.75rem; /* Slightly rounder default corners */
+  --positive: #16a34a;
+  --positive-foreground: #ffffff;
+  --negative: #dc2626;
+  --negative-foreground: #ffffff;
+  --info: #2563eb;
+  --info-foreground: #ffffff;
+  --accent-gold: #059669;
+  --accent-gold-hover: #047857;
+  --muted-disabled: #94a3b8;
+
+  --chart-1: #059669;
+  --chart-2: #16a34a;
+  --chart-3: #dc2626;
+  --chart-4: #2563eb;
+  --chart-5: #10b981;
+
+  --radius: 0.75rem;
 }
 
-/* DARK THEME */
+/* DARK THEME - Modern Obsidian & Electric Emerald (Fintech Luxury) */
 .dark {
-  /* Deep midnight violet instead of flat black */
-  --background: oklch(0.14 0.02 275); 
-  --foreground: oklch(0.985 0 0);
+  /* Main background: #080B0F — deep obsidian with subtle slate tone */
+  --background: #080B0F;
+  --foreground: #FFFFFF;
 
-  /* Elevated slate-violet for cards */
-  --card: oklch(0.18 0.02 275); 
-  --card-foreground: oklch(0.985 0 0);
+  /* Primary card surface: #0E131A — lifted slate-graphite surface */
+  --card: #0E131A;
+  --card-foreground: #FFFFFF;
 
-  --popover: oklch(0.18 0.02 275);
-  --popover-foreground: oklch(0.985 0 0);
+  /* Elevated cards, dropdowns, and modals: #141C26 */
+  --popover: #141C26;
+  --popover-foreground: #FFFFFF;
 
-  --primary: oklch(0.922 0 0);
-  --primary-foreground: oklch(0.205 0 0);
+  /* Primary accent: #10B981 — vibrant emerald mint (growth & wealth) */
+  --primary: #10B981;
+  --primary-foreground: #080B0F;
 
-  --secondary: oklch(0.269 0.01 275);
-  --secondary-foreground: oklch(0.985 0 0);
+  /* Elevated surface / secondary actions: #141C26 */
+  --secondary: #141C26;
+  --secondary-foreground: #FFFFFF;
 
-  --muted: oklch(0.23 0.02 275);
-  --muted-foreground: oklch(0.708 0 0);
+  /* Muted background & secondary text: #94A3B8 */
+  --muted: #141C26;
+  --muted-foreground: #94A3B8;
 
-  --accent: oklch(0.269 0.01 275);
-  --accent-foreground: oklch(0.985 0 0);
+  /* Hover states on dropdowns / lists */
+  --accent: #141C26;
+  --accent-foreground: #FFFFFF;
 
-  /* Softer, more elegant borders */
-  --border: oklch(1 0 0 / 8%);
-  --input: oklch(1 0 0 / 12%);
-  --ring: oklch(0.6 0.05 275);
+  /* Negative financial indicators / destructive: #F43F5E — rose crimson */
+  --destructive: #F43F5E;
+  --destructive-foreground: #FFFFFF;
+
+  /* Positive financial indicators: #10B981 — vibrant emerald */
+  --positive: #10B981;
+  --positive-foreground: #080B0F;
+
+  /* Negative financial indicators: #F43F5E */
+  --negative: #F43F5E;
+  --negative-foreground: #FFFFFF;
+
+  /* Informational accents & secondary charts: #38BDF8 — sky cyan */
+  --info: #38BDF8;
+  --info-foreground: #080B0F;
+
+  /* Gold / brand accents & muted disabled: #64748B */
+  --accent-gold: #10B981;
+  --accent-gold-hover: #34D399;
+  --muted-disabled: #64748B;
+
+  /* Borders and separators: #1E2736 — thin, crisp, low-contrast */
+  --border: #1E2736;
+  --input: #1E2736;
+  --ring: #10B981;
+
+  /* Chart colors */
+  --chart-1: #10B981; /* Primary: vibrant emerald */
+  --chart-2: #38BDF8; /* Secondary: sky cyan */
+  --chart-3: #F43F5E; /* Negative: rose crimson */
+  --chart-4: #818CF8; /* Tertiary: soft indigo */
+  --chart-5: #10B981; /* Highlight: emerald */
 }
 
 @layer base {
@@ -148,23 +216,85 @@
       from-neutral-950 
       via-neutral-700 
       to-neutral-950 
-      dark:from-amber-200 
-      dark:via-yellow-100 
-      dark:to-amber-300 
+      dark:from-[#10B981] 
+      dark:via-[#34D399] 
+      dark:to-[#10B981] 
       bg-clip-text 
       text-transparent 
       w-fit;
   }
-}
 
-/* Hero animation with premium float and glow effects */
-.hero-image-div {
-  transition: transform 0.8s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.8s ease;
-  transform: perspective(1000px) rotateX(15deg) translateY(0);
-  box-shadow: 0 25px 50px -12px rgba(139, 92, 246, 0.15); /* Faint purple glow */
-}
+  @keyframes float {
+    0%, 100% {
+      transform: translateY(0);
+    }
+    50% {
+      transform: translateY(-10px);
+    }
+  }
 
-.hero-image-div:hover {
-  transform: perspective(1000px) rotateX(5deg) translateY(-10px);
-  box-shadow: 0 35px 60px -15px rgba(139, 92, 246, 0.3); /* Stronger glow on hover */
+  .animate-float {
+    animation: float 4.5s ease-in-out infinite;
+  }
+
+  @keyframes hologramCount {
+    0% {
+      opacity: 0;
+      transform: translate(-50%, -50%) scale(0.65);
+    }
+    6% {
+      opacity: 1;
+      transform: translate(calc(-50% + 2px), calc(-50% - 8px)) scale(1);
+    }
+    20% {
+      opacity: 1;
+      transform: translate(calc(-50% + 7px), calc(-50% - 22px)) scale(1.02);
+    }
+    30% {
+      opacity: 0.55;
+      transform: translate(calc(-50% + 13px), calc(-50% - 34px)) scale(0.96);
+    }
+    38% {
+      opacity: 0;
+      transform: translate(calc(-50% + 18px), calc(-50% - 44px)) scale(0.85);
+    }
+    100% {
+      opacity: 0;
+      transform: translate(calc(-50% + 18px), calc(-50% - 44px)) scale(0.85);
+    }
+  }
+
+  .animate-hologram-number {
+    animation: hologramCount 5.8s cubic-bezier(0.22, 1, 0.36, 1) infinite;
+    opacity: 0;
+    will-change: transform, opacity;
+  }
+
+  @keyframes heroFadeIn {
+    0% {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    100% {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .animate-hero-fade-in {
+    animation: heroFadeIn 0.65s cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .animate-float,
+    .animate-hologram-number {
+      animation: none !important;
+      opacity: 0 !important;
+    }
+    .animate-hero-fade-in {
+      animation: none !important;
+      opacity: 1 !important;
+      transform: none !important;
+    }
+  }
 }

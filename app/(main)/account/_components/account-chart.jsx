@@ -295,9 +295,9 @@ export default function AccountChart({ transactions: initialTransactions = [], a
 
               <Legend />
 
-              <Bar dataKey="Income" fill="#22c55e" radius={[6, 6, 0, 0]} />
+              <Bar dataKey="Income" fill="#10B981" radius={[6, 6, 0, 0]} />
 
-              <Bar dataKey="Expense" fill="#ef4444" radius={[6, 6, 0, 0]} />
+              <Bar dataKey="Expense" fill="#F43F5E" radius={[6, 6, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>
         </div>

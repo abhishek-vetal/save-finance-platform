@@ -19,7 +19,7 @@ export default async function AddTransactions({ searchParams }) {
   }
 
   return (
-    <div className="container max-w-3xl mx-auto px-4 py-4 md:py-6">
+    <div className="container max-w-3xl mx-auto px-[39px] md:px-[47px] pt-2 sm:pt-4 pb-16 sm:pb-20 md:pb-24">
       {/* back link */}
       <Link
         href="/dashboard"

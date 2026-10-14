@@ -24,7 +24,7 @@ export default async function AccountsPage({ params }) {
   const { transactions, pagination, ...account } = accountData;
 
   return (
-    <div className="container mx-auto flex flex-col gap-8 px-4 md:px-6 py-4 md:py-6">
+    <div className="container mx-auto flex flex-col gap-8 px-[39px] md:px-[47px] pt-2 sm:pt-4 pb-16 sm:pb-20 md:pb-24">
       {/* back link and header */}
       <div>
         <Link

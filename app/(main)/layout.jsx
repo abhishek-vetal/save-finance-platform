@@ -1,8 +1,7 @@
 // this is the layout for the (main)
 
 import Header from "@/components/header";
-// date-fns is a modern javascript date utility library.
-import { getYear } from "date-fns"; 
+import Footer from "@/components/footer";
 
 export default function MainLayout({ children }) {
   return (
@@ -11,11 +10,7 @@ export default function MainLayout({ children }) {
 
       <main className="grow pt-24 md:pt-28">{children}</main>
 
-      <footer>
-        <div className="mt-16 bg-muted/40 py-10 text-center text-sm text-muted-foreground backdrop-blur-sm">
-          <p>&copy; {getYear(new Date())} Save. All Rights Reserved.</p>
-        </div>
-      </footer>
+      <Footer />
     </div>
   );
 }

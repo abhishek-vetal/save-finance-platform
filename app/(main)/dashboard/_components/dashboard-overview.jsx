@@ -16,16 +16,16 @@ import { format, isSameMonth } from "date-fns";
 import { PieChart, Pie, ResponsiveContainer, Tooltip } from "recharts";
 
 const COLORS = [
-  "#38BDF8", // Sky Blue
-  "#34D399", // Emerald Green
-  "#FBBF24", // Amber Yellow
-  "#F87171", // Coral Red
-  "#C084FC", // Purple
-  "#2DD4BF", // Teal
-  "#F472B6", // Pink
-  "#FB923C", // Orange
-  "#A3E635", // Lime
-  "#818CF8", // Indigo
+  "#10B981", // Emerald Mint
+  "#38BDF8", // Sky Cyan
+  "#818CF8", // Soft Indigo
+  "#F43F5E", // Rose Crimson
+  "#F59E0B", // Warm Amber
+  "#14B8A6", // Teal
+  "#A855F7", // Purple
+  "#EC4899", // Pink
+  "#06B6D4", // Electric Cyan
+  "#64748B", // Slate
 ];
 
 // when I hover my mouse on piechart then it will give me these props.

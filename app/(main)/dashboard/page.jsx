@@ -18,7 +18,7 @@ export default async function Dashboard() {
   const plaidAccount = accounts.find((a) => a.plaidAccessToken);
 
   return (
-    <div className="mt-10 flex flex-col gap-12">
+    <div className="flex flex-col gap-10 md:gap-12">
       {/* budget alert section */}
       <BudgetProgress
         monthlyBudget={budgetAndExpenseData?.budget}

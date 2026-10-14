@@ -2,7 +2,7 @@ import Link from "next/link";
 
 export default function NotFound() {
   return (
-    <div className="min-h-screen flex items-center justify-center mt-10 px-6 bg-background">
+    <div className="min-h-screen flex items-center justify-center px-6 py-12 sm:py-16 md:py-20 bg-background">
       <div className="max-w-lg p-8 text-center bg-card rounded-3xl shadow-sm dark:shadow-xl">
         {/* light mode and dark mode use different gradients */}
         <h1 className="text-[120px] font-extrabold tracking-tight leading-none bg-linear-to-r from-slate-800 via-violet-600 to-blue-500 bg-clip-text text-transparent">

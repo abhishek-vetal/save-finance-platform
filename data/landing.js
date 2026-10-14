@@ -2,113 +2,104 @@ import {
   BarChart3,
   Receipt,
   PieChart,
-  CreditCard,
+  RefreshCw,
   Repeat,
-  Sparkles,
+  ScanText,
+  Wallet,
+  ShieldCheck,
+  Clock,
+  TrendingUp,
+  UserPlus,
+  Landmark,
+  SlidersHorizontal,
 } from "lucide-react";
 
 // stats data
 export const statsData = [
   {
-    value: "1",
-    label: "Unified Finance Dashboard",
+    icon: <Wallet className="h-4.5 w-4.5" />,
+    title: "One Place",
+    description: "A unified view of your finances",
   },
   {
-    value: "100%",
-    label: "User-Controlled Data",
+    icon: <ShieldCheck className="h-4.5 w-4.5" />,
+    title: "Data Control",
+    description: "Manage your financial information",
   },
   {
-    value: "24/7",
-    label: "Access to Your Finances",
+    icon: <Clock className="h-4.5 w-4.5" />,
+    title: "Access Anytime",
+    description: "Review your finances whenever you need",
   },
   {
-    value: "AI",
-    label: "Powered Financial Insights",
+    icon: <TrendingUp className="h-4.5 w-4.5" />,
+    title: "AI-Assisted Insights",
+    description: "Understand spending patterns and trends",
   },
 ];
 
 // features data
 export const featuresData = [
   {
-    icon: <BarChart3 className="h-8 w-8 text-amber-600 dark:text-amber-400" />,
-    title: "Financial Dashboard",
+    icon: <RefreshCw className="h-5 w-5" />,
+    title: "Automatic Bank Sync",
+    badge: "Powered by Plaid",
     description:
-      "Get a clear overview of your accounts, balances, spending, and financial activity from a single dashboard.",
+      "Connect a supported bank account through Plaid and automatically sync eligible transactions into SAVE, reducing the need for manual transaction entry.",
   },
   {
-    icon: <Receipt className="h-8 w-8 text-amber-600 dark:text-amber-400" />,
+    icon: <BarChart3 className="h-5 w-5" />,
+    title: "Financial Dashboard",
+    description:
+      "Get a clear overview of your accounts, balances, spending, and financial activity from one dashboard.",
+  },
+  {
+    icon: <PieChart className="h-5 w-5" />,
+    title: "Budget Management",
+    description:
+      "Set budgets, track your spending, and monitor your expenses to stay aware of your financial limits.",
+  },
+  {
+    icon: <Receipt className="h-5 w-5" />,
     title: "Transaction Tracking",
     description:
       "Create and manage income and expense transactions with categories, descriptions, dates, and account-level tracking.",
   },
   {
-    icon: <PieChart className="h-8 w-8 text-amber-600 dark:text-amber-400" />,
-    title: "Budget Management",
-    description:
-      "Set a budget, track your spending, and monitor your expenses to stay aware of your financial limits.",
-  },
-  {
-    icon: <CreditCard className="h-8 w-8 text-amber-600 dark:text-amber-400" />,
-    title: "Multiple Accounts",
-    description:
-      "Manage multiple current and savings accounts and keep track of their balances in one place.",
-  },
-  {
-    icon: <Repeat className="h-8 w-8 text-amber-600 dark:text-amber-400" />,
+    icon: <Repeat className="h-5 w-5" />,
     title: "Recurring Transactions",
     description:
       "Set up recurring income or expenses and manage their schedules without manually creating every transaction.",
   },
   {
-    icon: <Sparkles className="h-8 w-8 text-amber-600 dark:text-amber-400" />,
-    title: "AI-Powered Insights",
+    icon: <ScanText className="h-5 w-5" />,
+    title: "AI Receipt Scanning",
     description:
-      "Use AI-powered features to analyze financial information and get smarter insights into your spending and finances.",
+      "Scan receipts and extract relevant transaction details to make recording expenses easier.",
   },
 ];
 
 // how it works data
 export const howItWorksData = [
   {
-    icon: <CreditCard className="h-8 w-8 text-amber-600 dark:text-amber-400" />,
-    title: "1. Create Your Account",
+    step: "01",
+    icon: <UserPlus className="h-5 w-5" />,
+    title: "Create Account",
     description:
-      "Sign up securely with Clerk and create your personal SAVE profile.",
+      "Sign up securely and create your personal SAVE profile.",
   },
   {
-    icon: <Receipt className="h-8 w-8 text-amber-600 dark:text-amber-400" />,
-    title: "2. Add Your Financial Data",
+    step: "02",
+    icon: <Landmark className="h-5 w-5" />,
+    title: "Connect or Add Account",
     description:
-      "Create your accounts, add income and expense transactions, and set your budget.",
+      "Connect a supported bank through Plaid to sync eligible transactions automatically, or add financial data manually.",
   },
   {
-    icon: <BarChart3 className="h-8 w-8 text-amber-600 dark:text-amber-400" />,
-    title: "3. Manage Your Finances",
+    step: "03",
+    icon: <BarChart3 className="h-5 w-5" />,
+    title: "Manage Finances",
     description:
-      "Use your dashboard to monitor accounts, transactions, budgets, and spending patterns.",
-  },
-];
-
-export const testimonialsData = [
-  {
-    name: "James Anderson",
-    role: "Account Management",
-    image: "/testimonial-1.png",
-    quote:
-      "SAVE gives me a simple way to manage multiple accounts and keep my financial information organized in one place.",
-  },
-  {
-    name: "Emily Carter",
-    role: "Software Developer",
-    image: "/testimonial-2.png",
-    quote:
-      "Tracking income and expenses becomes much easier when everything is available from a single dashboard.",
-  },
-  {
-    name: "Michael Johnson",
-    role: "Budget Management",
-    image: "/testimonial-3.png",
-    quote:
-      "Having my budget and spending information together makes it easier to understand where my money is going.",
+      "Review transactions, organize expenses, manage budgets, and understand your spending from one dashboard.",
   },
 ];

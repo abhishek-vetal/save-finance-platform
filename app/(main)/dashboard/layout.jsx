@@ -4,7 +4,7 @@ import { BarLoader } from "react-spinners";
 
 export default async function DashboardLayout({ children }) {
   return (
-    <div className="container mx-auto px-4 md:px-6">
+    <div className="container mx-auto px-[39px] md:px-[47px] pt-2 sm:pt-4 pb-16 sm:pb-20 md:pb-24">
       {/* dashboard heading */}
       <div className="mb-8">
         <h1 className="text-4xl font-extrabold tracking-tight md:text-5xl gradient">
