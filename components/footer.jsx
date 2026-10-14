@@ -23,6 +23,17 @@ export default function Footer() {
     });
   };
 
+  const scrollToSection = (e, sectionId) => {
+    e.preventDefault();
+    const element = document.getElementById(sectionId);
+    if (element) {
+      const isReducedMotion =
+        typeof window !== "undefined" &&
+        window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      element.scrollIntoView({ behavior: isReducedMotion ? "auto" : "smooth" });
+    }
+  };
+
   if (!isLandingPage) {
     return (
       <footer className="w-full border-t border-border/40 bg-muted/40 transition-colors duration-300">
@@ -52,6 +63,10 @@ export default function Footer() {
             <div>
               <Link
                 href="/"
+                onClick={(e) => {
+                  e.preventDefault();
+                  scrollToTop();
+                }}
                 className="inline-flex items-center shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#059669] dark:focus-visible:ring-[#10B981] rounded-sm"
                 aria-label="Save Home"
               >
@@ -77,18 +92,20 @@ export default function Footer() {
               aria-label="Footer Navigation"
               className="mt-6 sm:mt-8 flex items-center gap-6 sm:gap-8 flex-wrap"
             >
-              <Link
-                href="/#features"
-                className="text-[14px] sm:text-[14.5px] font-medium text-[#334155] dark:text-[#CBD5E1] hover:text-[#059669] dark:hover:text-[#10B981] transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#059669] dark:focus-visible:ring-[#10B981] rounded-sm"
+              <a
+                href="#features"
+                onClick={(e) => scrollToSection(e, "features")}
+                className="text-[14px] sm:text-[14.5px] font-medium text-[#334155] dark:text-[#CBD5E1] hover:text-[#059669] dark:hover:text-[#10B981] transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#059669] dark:focus-visible:ring-[#10B981] rounded-sm cursor-pointer"
               >
                 Features
-              </Link>
-              <Link
-                href="/#how-it-works"
-                className="text-[14px] sm:text-[14.5px] font-medium text-[#334155] dark:text-[#CBD5E1] hover:text-[#059669] dark:hover:text-[#10B981] transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#059669] dark:focus-visible:ring-[#10B981] rounded-sm"
+              </a>
+              <a
+                href="#how-it-works"
+                onClick={(e) => scrollToSection(e, "how-it-works")}
+                className="text-[14px] sm:text-[14.5px] font-medium text-[#334155] dark:text-[#CBD5E1] hover:text-[#059669] dark:hover:text-[#10B981] transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#059669] dark:focus-visible:ring-[#10B981] rounded-sm cursor-pointer"
               >
                 Workflow
-              </Link>
+              </a>
               <Link
                 href="/sign-in"
                 className="text-[14px] sm:text-[14.5px] font-medium text-[#334155] dark:text-[#CBD5E1] hover:text-[#059669] dark:hover:text-[#10B981] transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#059669] dark:focus-visible:ring-[#10B981] rounded-sm"

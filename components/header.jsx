@@ -7,6 +7,7 @@ import { usePathname } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Wallet, PlusCircle } from "lucide-react";
 import { ThemeToggle } from "./theme-toggle";
+import { useEffect } from "react";
 import PlaidLinkButton from "@/components/plaid-link-button";
 
 export default function Header() {
@@ -14,12 +15,38 @@ export default function Header() {
   const isLandingPage = pathname === "/";
   const isAuthApp = !isLandingPage;
 
+  useEffect(() => {
+    if (isLandingPage && typeof window !== "undefined" && window.location.hash) {
+      window.history.replaceState(null, "", window.location.pathname);
+    }
+  }, [isLandingPage]);
+
+  const scrollToSection = (e, sectionId) => {
+    e.preventDefault();
+    const element = document.getElementById(sectionId);
+    if (element) {
+      const isReducedMotion =
+        typeof window !== "undefined" &&
+        window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      element.scrollIntoView({ behavior: isReducedMotion ? "auto" : "smooth" });
+    }
+  };
+
   return (
     <header className="fixed top-0 left-0 right-0 z-50 w-full border-b border-border/40 bg-background/80 backdrop-blur-xl">
       <div className="w-full px-[26px] sm:px-[34px] md:px-[42px] lg:px-[50px] xl:px-[66px]">
         <nav className="relative flex h-20 items-center justify-between">
           {/* logo */}
-          <Link href="/" className="flex items-center shrink-0">
+          <Link
+            href="/"
+            onClick={(e) => {
+              if (isLandingPage) {
+                e.preventDefault();
+                window.scrollTo({ top: 0, behavior: "smooth" });
+              }
+            }}
+            className="flex items-center shrink-0"
+          >
             <Image
               src="/logo-light.png"
               alt="Save Logo"
@@ -41,18 +68,20 @@ export default function Header() {
           {/* Centered navigation links - Landing page only */}
           {isLandingPage && (
             <div className="hidden md:flex items-center gap-7 lg:gap-8 absolute left-1/2 -translate-x-1/2">
-              <Link
-                href="/#features"
-                className="text-sm font-medium text-muted-foreground hover:text-[#059669] dark:hover:text-[#10B981] transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#059669] dark:focus-visible:ring-[#10B981] rounded-sm"
+              <a
+                href="#features"
+                onClick={(e) => scrollToSection(e, "features")}
+                className="text-sm font-medium text-muted-foreground hover:text-[#059669] dark:hover:text-[#10B981] transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#059669] dark:focus-visible:ring-[#10B981] rounded-sm cursor-pointer"
               >
                 Features
-              </Link>
-              <Link
-                href="/#how-it-works"
-                className="text-sm font-medium text-muted-foreground hover:text-[#059669] dark:hover:text-[#10B981] transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#059669] dark:focus-visible:ring-[#10B981] rounded-sm"
+              </a>
+              <a
+                href="#how-it-works"
+                onClick={(e) => scrollToSection(e, "how-it-works")}
+                className="text-sm font-medium text-muted-foreground hover:text-[#059669] dark:hover:text-[#10B981] transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#059669] dark:focus-visible:ring-[#10B981] rounded-sm cursor-pointer"
               >
                 Workflow
-              </Link>
+              </a>
             </div>
           )}
 
