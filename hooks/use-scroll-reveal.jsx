@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState, useSyncExternalStore } from "react";
+import { useEffect, useState, useCallback, useSyncExternalStore } from "react";
 
 function subscribeReducedMotion(callback) {
   if (typeof window === "undefined") return () => {};
@@ -21,12 +21,17 @@ function getReducedMotionServerSnapshot() {
 /**
  * Custom hook to trigger scroll animations once an element enters the viewport.
  * - Plays entrance animations ONCE (unobserves and disconnects immediately upon trigger).
+ * - Uses a callback ref so dynamic mounting/route changes re-bind automatically.
  * - Respects prefers-reduced-motion (instantly returns isVisible=true).
  * - Avoids scroll hijacking and unnecessary re-renders.
  */
-export function useScrollReveal({ threshold = 0.15, rootMargin = "0px 0px -50px 0px" } = {}) {
-  const ref = useRef(null);
+export function useScrollReveal({ threshold = 0.1, rootMargin = "50px" } = {}) {
+  const [node, setNode] = useState(null);
   const [isIntersected, setIsIntersected] = useState(false);
+
+  const ref = useCallback((element) => {
+    setNode(element);
+  }, []);
 
   const prefersReducedMotion = useSyncExternalStore(
     subscribeReducedMotion,
@@ -36,9 +41,7 @@ export function useScrollReveal({ threshold = 0.15, rootMargin = "0px 0px -50px 
 
   useEffect(() => {
     if (prefersReducedMotion) return;
-
-    const element = ref.current;
-    if (!element) return;
+    if (!node) return;
 
     if (typeof IntersectionObserver === "undefined") {
       const raf = requestAnimationFrame(() => setIsIntersected(true));
@@ -56,10 +59,10 @@ export function useScrollReveal({ threshold = 0.15, rootMargin = "0px 0px -50px 
       { threshold, rootMargin }
     );
 
-    observer.observe(element);
+    observer.observe(node);
 
     return () => observer.disconnect();
-  }, [threshold, rootMargin, prefersReducedMotion]);
+  }, [node, threshold, rootMargin, prefersReducedMotion]);
 
   const isVisible = prefersReducedMotion || isIntersected;
 

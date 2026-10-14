@@ -8,11 +8,18 @@ import { ArrowUp } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useScrollReveal } from "@/hooks/use-scroll-reveal";
 
-export default function Footer() {
-  const pathname = usePathname();
-  const isLandingPage = pathname === "/";
-  const { ref, isVisible } = useScrollReveal({ threshold: 0.1 });
-  const currentYear = getYear(new Date());
+function NormalFooter({ currentYear }) {
+  return (
+    <footer className="w-full border-t border-border/40 bg-muted/40 transition-colors duration-300">
+      <div className="py-8 sm:py-10 text-center text-sm text-muted-foreground backdrop-blur-sm">
+        <p>&copy; {currentYear} Save. All rights reserved.</p>
+      </div>
+    </footer>
+  );
+}
+
+function LandingFooter({ currentYear }) {
+  const { ref, isVisible } = useScrollReveal({ threshold: 0.05, rootMargin: "100px" });
 
   const scrollToTop = () => {
     if (typeof window === "undefined") return;
@@ -33,16 +40,6 @@ export default function Footer() {
       element.scrollIntoView({ behavior: isReducedMotion ? "auto" : "smooth" });
     }
   };
-
-  if (!isLandingPage) {
-    return (
-      <footer className="w-full border-t border-border/40 bg-muted/40 transition-colors duration-300">
-        <div className="py-8 sm:py-10 text-center text-sm text-muted-foreground backdrop-blur-sm">
-          <p>&copy; {currentYear} Save. All rights reserved.</p>
-        </div>
-      </footer>
-    );
-  }
 
   return (
     <footer
@@ -160,4 +157,15 @@ export default function Footer() {
       </div>
     </footer>
   );
+}
+
+export default function Footer() {
+  const pathname = usePathname();
+  const currentYear = getYear(new Date());
+
+  if (pathname !== "/") {
+    return <NormalFooter currentYear={currentYear} />;
+  }
+
+  return <LandingFooter currentYear={currentYear} />;
 }
